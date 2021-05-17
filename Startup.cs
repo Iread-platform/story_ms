@@ -4,11 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Consul;
+using iread_story.DataAccess.Data;
 using iread_story.Web.Util;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,6 +21,11 @@ namespace iread_story
 {
     public class Startup
     {
+        public static readonly Microsoft.Extensions.Logging.LoggerFactory _myLoggerFactory =
+            new LoggerFactory(new[] {
+        new Microsoft.Extensions.Logging.Debug.DebugLoggerProvider()
+            });
+
         public Startup(IConfiguration configuration)
         {
             Configuration = new ConfigurationBuilder()
@@ -33,8 +40,15 @@ namespace iread_story
         public void ConfigureServices(IServiceCollection services)
         {
 
+            // for routing
             services.AddControllers();
 
+
+            // for connection of DB
+            services.AddDbContext<AppDbContext>(
+                options => { options.UseLoggerFactory(_myLoggerFactory).UseMySQL(Configuration.GetConnectionString("DefaultConnection"));
+                });
+            
             // for consul
             services.AddSingleton<IConsulClient, ConsulClient>(p => new ConsulClient(consulConfig =>
             {
@@ -43,6 +57,8 @@ namespace iread_story
             }));
             services.AddConsulConfig(Configuration);
 
+            
+            // for swagger
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "iread_story", Version = "v1" });
@@ -57,6 +73,12 @@ namespace iread_story
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "iread_story v1"));
+            }
+
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
+                context.Database.Migrate();
             }
 
             app.UseHttpsRedirection();
