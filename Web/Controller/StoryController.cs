@@ -9,18 +9,18 @@ using Microsoft.Extensions.Logging;
 namespace iread_story.Web.Controller
 {
     [ApiController]
-    [Route("[controller]")]
-    public class StoryController : ControllerBase
+    [Route("api/[controller]")]
+    public class StoriesController : ControllerBase
     {
 
-        private readonly ILogger<StoryController> _logger;
+        private readonly ILogger<StoriesController> _logger;
 
-        public StoryController(ILogger<StoryController> logger)
+        public StoriesController(ILogger<StoriesController> logger)
         {
             _logger = logger;
         }
 
-        [HttpGet]
+        [HttpGet("test")]
         public IEnumerable<Story> GetStories()
         {
             List<Story> stories = new List<Story>();
