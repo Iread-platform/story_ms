@@ -25,15 +25,15 @@ namespace iread_story.Web.Controller
         {
             List<Story> stories = new List<Story>();
             stories.Add(new Story { StoryId = 1 ,
-            title = "Things Fall Apart",
+            Title = "Things Fall Apart",
             ReleaseDate = DateTime.Now.AddYears(-10)
             }); 
             stories.Add(new Story { StoryId = 2 ,
-            title = "Nineteen Eighty-Four",
+            Title = "Nineteen Eighty-Four",
             ReleaseDate = DateTime.Now.AddYears(-5)
             });
             stories.Add(new Story { StoryId = 3 ,
-            title = "Frankenstein",
+            Title = "Frankenstein",
             ReleaseDate = DateTime.Now.AddYears(-15)
             });
             return stories;
