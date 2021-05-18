@@ -15,7 +15,6 @@
   },
 
   "ConnectionStrings": {
-    //"DefaultConnection": "Server=story_ms_db;Database=story_ms_db;Uid=codavia;Pwd=cod@v!@; convert zero datetime=True"
     "DefaultConnection": "Server=localhost;Database=story_ms_db;Uid=codavia;Pwd=cod@v!@; convert zero datetime=True"
   },
 
