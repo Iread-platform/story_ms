@@ -1,0 +1,41 @@
+##############################################################
+########################    DNS     ##########################
+##############################################################
+
+docker run --hostname dns.mageddo --restart=unless-stopped -p 5380:5380 \
+-v /var/run/docker.sock:/var/run/docker.sock \
+-v /etc/resolv.conf:/etc/resolv.conf \
+-d defreitas/dns-proxy-serve
+
+##############################################################
+###############    DB of micro service    ####################
+##############################################################
+
+##build docker image for mysql:
+docker build -f DockerizeDb/Dockerfile -t story_ms_db .
+
+##run mysql container:
+docker run -p 3310:3306 \
+ --name story_ms_db \
+ --hostname story_ms_db \
+ -e MYSQL_ROOT_PASSWORD=p@$$word \
+ -d story_ms_db
+
+##attach mysql container:
+docker exec -it story_ms_db bash
+
+##login (to verify):
+mysql --host=127.0.0.1 --protocol=TCP -u codavia -p
+
+
+##############################################################
+##################   micro service    ########################
+##############################################################
+
+##build docker image for story ms:
+docker build -f Dockerfile -t story_ms .
+
+##create container from story ms image:
+docker run -p 5010:5010 --name story_ms --hostname story_ms -d story_ms:latest
+
+##############################################################
