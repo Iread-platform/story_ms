@@ -1,7 +1,7 @@
 stages:
   - build
   - publish
-  - build_docker_image
+  - build_docker_image_and_push_on_docker_hub
 
 build:
   stage: build
@@ -16,8 +16,6 @@ publish:
   only:
     - develop
   image : mcr.microsoft.com/dotnet/sdk:5.0
-#  only:
-#    - develop
   artifacts:
     paths:
       - publish/
@@ -25,10 +23,8 @@ publish:
     - dotnet publish -o ./publish
 
 
-#before_script:
-#  - docker info
-build_docker_image:
-  stage: build_docker_image
+build_docker_image_and_push_on_docker_hub:
+  stage: build_docker_image_and_push_on_docker_hub
   only:
     - develop
   image: docker:latest
@@ -43,5 +39,3 @@ build_docker_image:
     - docker build -f Dockerfile -t "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}" .
     - docker login --username $DOCKER_USER_NAME --password $DOCKER_PASSWORD
     - docker push "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}"
-
-#    - docker run my-docker-image /script/to/run/tests
