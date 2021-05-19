@@ -26,8 +26,16 @@ publish:
 build_docker_image:
   stage: build_docker_image
   image: docker:latest
+  variables:
+    DOCKER_USER_NAME: "yazankassamcodavia"
+    DOCKER_PASSWORD: "yazankassam.codav@v!@"
+    DOCKER_ORGANIZATION_NAME: "iread"
+    DOCKER_IMAGE_NAME: "story_ms"
   services:
     - docker:dind
   script:
-    - docker build -f Dockerfile -t story_ms .
+    - docker build -f Dockerfile -t $DOCKER_IMAGE_NAME .
+    - docker login --username $DOCKER_USER_NAME --password $DOCKER_PASSWORD
+    - docker push "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}""
+
 #    - docker run my-docker-image /script/to/run/tests
