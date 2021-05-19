@@ -21,9 +21,11 @@ publish:
     - dotnet publish -o ./publish
 
 
-before_script:
-  - docker info
+
 build_docker_image:
+  stage: build_docker_image
+  before_script:
+    - docker info
   script:
     - docker build -f Dockerfile -t story_ms .
 #    - docker run my-docker-image /script/to/run/tests
