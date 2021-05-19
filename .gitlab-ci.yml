@@ -2,14 +2,14 @@ image : mcr.microsoft.com/dotnet/sdk:5.0
 
 stages:
   - build
-  - release
+  - publish
 
 build:
   stage: build
   script:
     - dotnet build
 
-release:
+publish:
   stage: publish
 #  only:
 #    - develop
