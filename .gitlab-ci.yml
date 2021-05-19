@@ -5,12 +5,16 @@ stages:
 
 build:
   stage: build
+  only:
+    - develop
   image : mcr.microsoft.com/dotnet/sdk:5.0
   script:
     - dotnet build
 
 publish:
   stage: publish
+  only:
+    - develop
   image : mcr.microsoft.com/dotnet/sdk:5.0
 #  only:
 #    - develop
@@ -25,6 +29,8 @@ publish:
 #  - docker info
 build_docker_image:
   stage: build_docker_image
+  only:
+    - develop
   image: docker:latest
   variables:
     DOCKER_USER_NAME: "yazankassamcodavia"
