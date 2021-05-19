@@ -24,6 +24,7 @@ publish:
 #before_script:
 #  - docker info
 build_docker_image:
+  stage: build_docker_image
   image: docker:latest
   services:
     - docker:dind
