@@ -48,16 +48,16 @@ dockerize_develop:
 
 dockerize_master:
   stage: build_docker_image_and_push_on_docker_hub
-  only:
-    - master
+#  only:
+#    - master
   image: docker:latest
   services:
     - docker:dind
   before_script:
-    - apt update && apt -y install jq
+    - apk add jq
   script:
     - export DOCKER_IMAGE_VER=release-$(jq -r .Release appsettings.json)
     - echo "DOCKER IMAGE VERION = $DOCKER_IMAGE_VER"
-    - docker build -f Dockerfile -t "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}" .
-    - docker login --username $DOCKER_USER_NAME --password $DOCKER_PASSWORD
-    - docker push "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
+#    - docker build -f Dockerfile -t "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}" .
+#    - docker login --username $DOCKER_USER_NAME --password $DOCKER_PASSWORD
+#    - docker push "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
