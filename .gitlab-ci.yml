@@ -58,6 +58,6 @@ dockerize_master:
   script:
     - export DOCKER_IMAGE_VER=release-$(jq -r .Release appsettings.json)
     - echo "DOCKER IMAGE VERION = $DOCKER_IMAGE_VER"
-#    - docker build -f Dockerfile -t "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}" .
-#    - docker login --username $DOCKER_USER_NAME --password $DOCKER_PASSWORD
-#    - docker push "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
+    - docker build -f Dockerfile -t "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}" .
+    - docker login --username $DOCKER_USER_NAME --password $DOCKER_PASSWORD
+    - docker push "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
