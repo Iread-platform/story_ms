@@ -3,10 +3,17 @@ stages:
   - publish
   - build_docker_image_and_push_on_docker_hub
 
+variables:
+  DOCKER_USER_NAME: "yazankassamcodavia"
+  DOCKER_PASSWORD: "yazankassamcod@v!@"
+  DOCKER_ORGANIZATION_NAME: "iread"
+  DOCKER_IMAGE_NAME: "story_ms"
+  
 build:
   stage: build
   only:
     - develop
+    - master
   image : mcr.microsoft.com/dotnet/sdk:5.0
   script:
     - dotnet build
@@ -15,6 +22,7 @@ publish:
   stage: publish
   only:
     - develop
+    - master
   image : mcr.microsoft.com/dotnet/sdk:5.0
   artifacts:
     paths:
@@ -23,16 +31,11 @@ publish:
     - dotnet publish -o ./publish
 
 
-build_docker_image_and_push_on_docker_hub:
+dockerize_develop:
   stage: build_docker_image_and_push_on_docker_hub
   only:
     - develop
   image: docker:latest
-  variables:
-    DOCKER_USER_NAME: "yazankassamcodavia"
-    DOCKER_PASSWORD: "yazankassamcod@v!@"
-    DOCKER_ORGANIZATION_NAME: "iread"
-    DOCKER_IMAGE_NAME: "story_ms"
   services:
     - docker:dind
   script:
@@ -41,3 +44,18 @@ build_docker_image_and_push_on_docker_hub:
     - docker build -f Dockerfile -t "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}" .
     - docker login --username $DOCKER_USER_NAME --password $DOCKER_PASSWORD
     - docker push "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
+
+
+dockerize_master:
+  stage: build_docker_image_and_push_on_docker_hub
+#  only:
+#    - master
+#  image: docker:latest
+#  services:
+#    - docker:dind
+  script:
+    - export DOCKER_IMAGE_VER=$(jq .Release appsettings.json)
+    - echo "DOCKER IMAGE VERION = $DOCKER_IMAGE_VER"
+#    - docker build -f Dockerfile -t "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}" .
+#    - docker login --username $DOCKER_USER_NAME --password $DOCKER_PASSWORD
+#    - docker push "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
