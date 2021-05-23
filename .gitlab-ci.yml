@@ -4,7 +4,7 @@ stages:
   - build_docker_image_and_push_on_docker_hub
 
 variables:
-  VER_NO: '$CI_PIPELINE_IID | sed 's/.\{1\}/&./g' | sed 's/.$//''
+  VER_NO: '$CI_PIPELINE_IID | sed "s/.\{1\}/&./g" | sed "s/.$//"'
 
 build:
   stage: build
