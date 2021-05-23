@@ -48,8 +48,8 @@ dockerize_develop:
 
 dockerize_master:
   stage: build_docker_image_and_push_on_docker_hub
-#  only:
-#    - master
+  only:
+    - master
   image: docker:latest
   services:
     - docker:dind
