@@ -13,8 +13,8 @@ build:
 
 publish:
   stage: publish
-#  only:
-#    - develop
+  only:
+    - develop
   image : mcr.microsoft.com/dotnet/sdk:5.0
   artifacts:
     paths:
@@ -25,8 +25,8 @@ publish:
 
 build_docker_image_and_push_on_docker_hub:
   stage: build_docker_image_and_push_on_docker_hub
-  #only:
-  #  - develop
+  only:
+    - develop
   image: docker:latest
   variables:
     DOCKER_USER_NAME: "yazankassamcodavia"
