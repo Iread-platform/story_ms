@@ -3,18 +3,13 @@ stages:
   - publish
   - build_docker_image_and_push_on_docker_hub
 
-variables:
-  VER_NO: '$CI_PIPELINE_IID | sed "s/.\{1\}/&./g" | sed "s/.$//"'
-
 build:
   stage: build
-#  only:
-#    - develop
-#  image : mcr.microsoft.com/dotnet/sdk:5.0
+  only:
+    - develop
+  image : mcr.microsoft.com/dotnet/sdk:5.0
   script:
-    - echo $CI_PIPELINE_IID | sed 's/.\{1\}/&./g' | sed 's/.$//'
-    - echo $VER_NO
-#    - dotnet build
+    - dotnet build
 
 publish:
   stage: publish
@@ -30,8 +25,8 @@ publish:
 
 build_docker_image_and_push_on_docker_hub:
   stage: build_docker_image_and_push_on_docker_hub
-  only:
-    - develop
+  #only:
+  #  - develop
   image: docker:latest
   variables:
     DOCKER_USER_NAME: "yazankassamcodavia"
@@ -41,6 +36,8 @@ build_docker_image_and_push_on_docker_hub:
   services:
     - docker:dind
   script:
-    - docker build -f Dockerfile -t "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}" .
+    - export DOCKER_IMAGE_VER=$(printf "%03d" $CI_PIPELINE_IID) | sed 's/.\{1\}/&./g' | sed 's/.$//'
+    - echo "DOCKER IMAGE VERION = $DOCKER_IMAGE_VER"
+    - docker build -f Dockerfile -t "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}" .
     - docker login --username $DOCKER_USER_NAME --password $DOCKER_PASSWORD
-    - docker push "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}"
+    - docker push "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
