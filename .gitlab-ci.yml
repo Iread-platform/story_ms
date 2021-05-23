@@ -53,6 +53,8 @@ dockerize_master:
 #  image: docker:latest
 #  services:
 #    - docker:dind
+  before_script:
+    - apt update && apt -y install jq
   script:
     - export DOCKER_IMAGE_VER=release-$(jq -r .Release appsettings.json)
     - echo "DOCKER IMAGE VERION = $DOCKER_IMAGE_VER"
