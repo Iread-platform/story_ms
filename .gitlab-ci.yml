@@ -5,8 +5,8 @@ stages:
 
 build:
   stage: build
-  only:
-    - develop
+#  only:
+#    - develop
   image : mcr.microsoft.com/dotnet/sdk:5.0
   script:
     - echo $CI_PIPELINE_IID
