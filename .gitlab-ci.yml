@@ -36,7 +36,7 @@ build_docker_image_and_push_on_docker_hub:
   services:
     - docker:dind
   script:
-    - export DOCKER_IMAGE_VER=$(printf "%03d" $CI_PIPELINE_IID) | sed 's/.\{1\}/&./g' | sed 's/.$//'
+    - export DOCKER_IMAGE_VER=$(printf "%03d" $CI_PIPELINE_IID | sed 's/.\{1\}/&./g' | sed 's/.$//')
     - echo "DOCKER IMAGE VERION = $DOCKER_IMAGE_VER"
     - docker build -f Dockerfile -t "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}" .
     - docker login --username $DOCKER_USER_NAME --password $DOCKER_PASSWORD
