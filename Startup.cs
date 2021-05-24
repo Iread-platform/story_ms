@@ -82,7 +82,7 @@ namespace iread_story
                 context.Database.Migrate();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 

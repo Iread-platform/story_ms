@@ -50,13 +50,24 @@ namespace iread_story.Web.Util
 			var serviceName = configuration.GetValue<string>("ConsulConfig:ServiceName");
 			var uri = new Uri(address);
 
+
+			var httpCheck = new AgentServiceCheck()
+			{
+				DeregisterCriticalServiceAfter = TimeSpan.FromMinutes(1),
+				Interval = TimeSpan.FromSeconds(10),
+				HTTP = $"{address}/HealthCheck"
+			};
+
+
 			var registration = new AgentServiceRegistration()
 			{
+				Checks = new[] {httpCheck},
 				ID = serviceName +":"+ uri.Port,
 				Name = serviceName,
 				Address = $"{uri.Host}",
 				Port = uri.Port
 			};
+
 
 			logger.LogInformation("Registering with Consul");
 			consulClient.Agent.ServiceDeregister(registration.ID).ConfigureAwait(true);
@@ -67,6 +78,10 @@ namespace iread_story.Web.Util
 				logger.LogInformation("Unregistering from Consul");
 				consulClient.Agent.ServiceDeregister(registration.ID).ConfigureAwait(true);
 			});
+
+
+
+
 
 			return app;
 		}
