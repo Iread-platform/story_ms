@@ -14,21 +14,16 @@ namespace iread_story.DataAccess.Data.Entity
         [Required]
         public int StoryId { get; set; }
 
-        [Required]
         public string Title { get; set; }
 
         public DateTime ReleaseDate { get; set; }
           
-        [NotMapped]
         public string Description { get; set; }
         
         public int StoryLevel { get; set; }
         
         [Required]
         public string Writer { get; set; }
-        
-        // [NotMapped]
-        // public ICollection<string> KeyWords { get; set; }
         
         public int Rating { get; set; }
     }
