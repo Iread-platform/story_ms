@@ -7,7 +7,8 @@ namespace iread_story.DataAccess.Interface
     {
         Story GetStory(int id);
 
-        void AddStory(Story story);
+        void UpdateStory(int id, Story story);
+        void AddStory( Story story);
 
         IEnumerable<Story> GetStories();
 

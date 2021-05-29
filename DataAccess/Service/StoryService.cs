@@ -20,6 +20,12 @@ namespace iread_story.DataAccess.Service
             return _context.Stories.Find(id);
          }
 
+         public void UpdateStory(int id, Story story)
+         {
+             _context.Stories.Update(story);
+             _context.SaveChanges();
+         }
+
          public async void  AddStory(Story story)  
          {
              await _context.Stories.AddAsync(story);

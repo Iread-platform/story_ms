@@ -14,13 +14,13 @@ namespace iread_story.Web.Controller
 {
     [ApiController]
     [Route("api/[controller]/")]
-    public class StoriesController : ControllerBase
+    public class StoryController : ControllerBase
     {
 
-        private readonly ILogger<StoriesController> _logger;
+        private readonly ILogger<StoryController> _logger;
         private readonly IPublicRepository _repository;
         private readonly IMapper _mapper;
-        public StoriesController(ILogger<StoriesController> logger, IPublicRepository repository, IMapper mapper)
+        public StoryController(ILogger<StoryController> logger, IPublicRepository repository, IMapper mapper)
         {
             _logger = logger;
             _repository = repository;
@@ -51,13 +51,14 @@ namespace iread_story.Web.Controller
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult AddStory([FromBody] Story story)
+        public IActionResult AddStory([FromBody] StoryDto story)
         {
+    
             if (story == null)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
-            _repository.getStoryService.AddStory(story);
+            _repository.getStoryService.AddStory(_mapper.Map<Story>(story));
             return CreatedAtRoute("GetStory",new { Id = story.StoryId }, story);
         }
         
@@ -73,6 +74,26 @@ namespace iread_story.Web.Controller
             }
             _repository.getStoryService.DeleteStory(id);
             return _repository.getStoryService.Exists(id) ?   StatusCode(500) :   Ok();
+        }
+        
+        [HttpPut("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult UpdateStory(int id, [FromBody] StoryDto story)
+        {
+            if (story == null)
+            {
+                return BadRequest();
+            }
+            if (!_repository.getStoryService.Exists(id))
+            {
+                return NotFound();
+            }
+
+            var storyToUpdate = _mapper.Map<Story>(story);
+            _repository.getStoryService.UpdateStory(id, storyToUpdate);
+            return NoContent();
         }
     }
 }
