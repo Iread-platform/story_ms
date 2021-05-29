@@ -17,7 +17,7 @@ namespace iread_story.DataAccess.Service
 
          public Story GetStory(int id)
          {
-            return _context.Stories.FirstOrDefault(story => story.StoryId.Equals(id));
+            return _context.Stories.Find(id);
          }
 
          public async void  AddStory(Story story)  
@@ -33,8 +33,10 @@ namespace iread_story.DataAccess.Service
 
          public void DeleteStory(int id)
          {
-              _context.Stories.Remove(GetStory(id));
-              _context.SaveChanges();
+             var storyToRemove = new Story() { StoryId = id };
+             _context.Stories.Attach(storyToRemove);
+             _context.Stories.Remove(storyToRemove);
+             _context.SaveChanges();
          }
 
          public bool Exists(int id)
