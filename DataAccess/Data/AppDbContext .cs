@@ -20,10 +20,6 @@ namespace iread_story.DataAccess.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Story>(s =>
-            {
-                s.Property(t => t.Rating).HasColumnName("Rating");
-            });
         }
 
         //entities
