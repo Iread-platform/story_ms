@@ -82,10 +82,9 @@ namespace iread_story.Web.Controller
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult UpdateStory(int id, [FromBody] StoryDto story)
         {
-            if (story == null)
-            {
-                return BadRequest();
-            }
+            if(story == null || !ModelState.IsValid){ return BadRequest(ModelState); }
+
+            story.StoryId = id; 
             if (!_repository.getStoryService.Exists(id))
             {
                 return NotFound();
