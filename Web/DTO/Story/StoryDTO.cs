@@ -6,8 +6,6 @@ namespace iread_story.Web.DTO.Story
     public class StoryDto
     {
 
-        public int StoryId { get; set; }
-
         public string Title { get; set; }
 
         public DateTime ReleaseDate { get; set; }
@@ -18,7 +16,7 @@ namespace iread_story.Web.DTO.Story
         
         public string Writer { get; set; }
         
-        public ICollection<string> KeyWords { get; set; }
+        public ICollection<string> Tags { get; set; }
         
         public float Rating { get; set; }
     }

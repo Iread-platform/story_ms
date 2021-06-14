@@ -53,13 +53,13 @@ namespace iread_story.Web.Controller
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult AddStory([FromBody] StoryDto story)
         {
-    
             if (story == null)
             {
                 return BadRequest(ModelState);
             }
+            var storyToCreate = _mapper.Map<Story>(story);
             _repository.getStoryService.AddStory(_mapper.Map<Story>(story));
-            return CreatedAtRoute("GetStory",new { Id = story.StoryId }, story);
+            return CreatedAtRoute("GetStory",new { Id = storyToCreate.StoryId }, story);
         }
         
         [HttpDelete("{id:int}")]
@@ -80,7 +80,7 @@ namespace iread_story.Web.Controller
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult UpdateStory(int id, [FromBody] StoryDto story)
+        public IActionResult UpdateStory(int id, [FromBody] StoryUpdateDto story)
         {
             if(story == null || !ModelState.IsValid){ return BadRequest(ModelState); }
 
