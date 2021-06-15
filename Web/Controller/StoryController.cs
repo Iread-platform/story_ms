@@ -58,8 +58,8 @@ namespace iread_story.Web.Controller
                 return BadRequest(ModelState);
             }
             var storyToCreate = _mapper.Map<Story>(story);
-            _repository.getStoryService.AddStory(_mapper.Map<Story>(story));
-            return CreatedAtRoute("GetStory",new { Id = storyToCreate.StoryId }, story);
+            _repository.getStoryService.AddStory(storyToCreate);
+            return CreatedAtRoute("GetStory",new { Id = storyToCreate.StoryId }, storyToCreate);
         }
         
         [HttpDelete("{id:int}")]
