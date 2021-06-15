@@ -9,6 +9,7 @@ using iread_story.DataAccess.Data;
 using iread_story.DataAccess.Interface;
 using iread_story.DataAccess.Repository;
 using iread_story.Web.Profile;
+using iread_story.Web.Service;
 using iread_story.Web.Util;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -61,6 +62,7 @@ namespace iread_story
                 consulConfig.Address = new Uri(address);
             }));
             services.AddConsulConfig(Configuration);
+            services.AddHttpClient<IConsulHttpClient, ConsulHttpClient>();
 
             
             // for swagger

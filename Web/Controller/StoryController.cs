@@ -2,12 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using iread_story.DataAccess.Data.Entity;
 using iread_story.DataAccess.Interface;
 using iread_story.Web.DTO.Story;
+using iread_story.Web.DTO.Tag;
+using iread_story.Web.Service;
+using iread_story.Web.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace iread_story.Web.Controller
@@ -20,11 +25,13 @@ namespace iread_story.Web.Controller
         private readonly ILogger<StoryController> _logger;
         private readonly IPublicRepository _repository;
         private readonly IMapper _mapper;
-        public StoryController(ILogger<StoryController> logger, IPublicRepository repository, IMapper mapper)
+        private readonly IConsulHttpClient _consulHttpClient;
+        public StoryController(ILogger<StoryController> logger, IPublicRepository repository, IMapper mapper, IConsulHttpClient consulHttpClient)
         {
             _logger = logger;
             _repository = repository;
             _mapper = mapper;
+            _consulHttpClient = consulHttpClient;
         }
 
         [HttpGet]
@@ -51,15 +58,25 @@ namespace iread_story.Web.Controller
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult AddStory([FromBody] StoryDto story)
+        public async Task<IActionResult> AddStory([FromBody] StoryDto story)
         {
     
             if (story == null)
             {
                 return BadRequest(ModelState);
             }
-            _repository.getStoryService.AddStory(_mapper.Map<Story>(story));
-            return CreatedAtRoute("GetStory",new { Id = story.StoryId }, story);
+
+            Story storyToAdd = _mapper.Map<Story>(story);
+            _repository.getStoryService.AddStory(storyToAdd);
+            
+            
+            await _consulHttpClient.PostAsync<TagWithIdDto[]>("tag_ms", "/api/tags", 
+                new TagsWithStoryId{
+                    tagsDtos = story.KeyWords.ToList()
+                    ,storyId = storyToAdd.StoryId
+                } );
+            
+            return CreatedAtRoute("GetStory",new { Id = storyToAdd.StoryId }, _mapper.Map<StoryDto>(storyToAdd));
         }
         
         [HttpDelete("{id:int}")]

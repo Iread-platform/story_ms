@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using iread_story.Web.DTO.Tag;
 
 namespace iread_story.Web.DTO.Story
 {
@@ -18,7 +19,7 @@ namespace iread_story.Web.DTO.Story
         
         public string Writer { get; set; }
         
-        public ICollection<string> KeyWords { get; set; }
+        public ICollection<CreateTagDto> KeyWords { get; set; }
         
         public float Rating { get; set; }
     }
