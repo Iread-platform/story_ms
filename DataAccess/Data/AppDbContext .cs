@@ -20,11 +20,10 @@ namespace iread_story.DataAccess.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-           
         }
 
         //entities
-        public DbSet<Story> SysUsers { get; set; }
+        public DbSet<Story> Stories { get; set; }
 
     }
 }
