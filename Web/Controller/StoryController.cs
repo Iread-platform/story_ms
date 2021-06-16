@@ -1,14 +1,21 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using AutoMapper;
+using Consul;
 using iread_story.DataAccess.Data.Entity;
+using iread_story.DataAccess.Data.Types;
 using iread_story.DataAccess.Interface;
 using iread_story.Web.DTO.Story;
+using iread_story.Web.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace iread_story.Web.Controller
 {
@@ -20,11 +27,14 @@ namespace iread_story.Web.Controller
         private readonly ILogger<StoryController> _logger;
         private readonly IPublicRepository _repository;
         private readonly IMapper _mapper;
-        public StoryController(ILogger<StoryController> logger, IPublicRepository repository, IMapper mapper)
+        private readonly IConsulHttpClientService _consulClient;
+        private const string _attachmentsMs = "attachment_ms"; 
+        public StoryController(ILogger<StoryController> logger, IPublicRepository repository, IMapper mapper, IConsulHttpClientService consulClient)
         {
             _logger = logger;
             _repository = repository;
             _mapper = mapper;
+            _consulClient = consulClient;
         }
 
         [HttpGet]
@@ -51,7 +61,7 @@ namespace iread_story.Web.Controller
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult AddStory([FromBody] StoryDto story)
+        public async Task<IActionResult> AddStory([FromForm] StoryDto story)
         {
             if (story == null)
             {
@@ -59,6 +69,8 @@ namespace iread_story.Web.Controller
             }
             var storyToCreate = _mapper.Map<Story>(story);
             _repository.getStoryService.AddStory(storyToCreate);
+            var parameters = new Dictionary<string, string>() { {"StoryId",storyToCreate.StoryId.ToString()} };
+            await _consulClient.PostAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment",parameters, story.Attachments?.ToList());
             return CreatedAtRoute("GetStory",new { Id = storyToCreate.StoryId }, storyToCreate);
         }
         
@@ -80,7 +92,7 @@ namespace iread_story.Web.Controller
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult UpdateStory(int id, [FromBody] StoryUpdateDto story)
+        public IActionResult UpdateStory(int id, [FromForm] List<IFormFile> attachments, [FromBody] StoryUpdateDto story)
         {
             if(story == null || !ModelState.IsValid){ return BadRequest(ModelState); }
 
