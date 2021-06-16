@@ -4,7 +4,7 @@ MAINTAINER Yazan Kassam, yazankassam.codavia@gmail.com
 
 WORKDIR /app
 
-ENV ASPNETCORE_URLS="http://46.227.254.20:5010"
+ENV ASPNETCORE_URLS="http://localhost:5010"
 
 ENV ASPNETCORE_ENVIRONMENT=Development
 
