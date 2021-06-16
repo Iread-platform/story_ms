@@ -10,6 +10,7 @@ variables:
   DOCKER_ORGANIZATION_NAME: "iread"
   DOCKER_IMAGE_NAME: "story_ms"
   DOCKER_IMAGE_AND_TAG: ""
+  CONTAINER_PORT: "5010"
   
 build:
   stage: build
@@ -88,7 +89,8 @@ deploy:
     - chmod 700 ~/.ssh
   script:
     - echo "$SSH_PRIVATE_KEY"
-    - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker pull ${DOCKER_IMAGE_AND_TAG} ;"
+    - ssh -o StrictHostKeyChecking=no root@${SERVER_IP} "docker pull ${DOCKER_IMAGE_AND_TAG} ;"
+    - ssh -o StrictHostKeyChecking=no root@${SERVER_IP} "docker run -p ${CONTAINER_PORT}:${CONTAINER_PORT} --name ${DOCKER_IMAGE_NAME} --hostname ${DOCKER_IMAGE_NAME} -d ${DOCKER_IMAGE_AND_TAG};"
   dependencies:
     - dockerize_master
     - dockerize_develop
