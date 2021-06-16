@@ -77,6 +77,7 @@ namespace iread_story
                 config.AddProfile<AutoMapperProfile>();
             }).CreateMapper();
             services.AddSingleton(mapper);
+            services.AddHttpClient<IConsulHttpClientService,ConsulHttpClientService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

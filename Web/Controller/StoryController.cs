@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Consul;
 using iread_story.DataAccess.Data.Entity;
+using iread_story.DataAccess.Data.Types;
 using iread_story.DataAccess.Interface;
 using iread_story.Web.DTO.Story;
 using iread_story.Web.DTO.Tag;
@@ -12,8 +14,8 @@ using iread_story.Web.Service;
 using iread_story.Web.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace iread_story.Web.Controller
 {
@@ -60,7 +62,6 @@ namespace iread_story.Web.Controller
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddStory([FromBody] CreateStoryDto story)
         {
-    
             if (story == null)
             {
                 return BadRequest(ModelState);
@@ -75,6 +76,8 @@ namespace iread_story.Web.Controller
                     tagsDtos = story.KeyWords.ToList()
                     ,storyId = storyToAdd.StoryId
                 } );
+            var parameters = new Dictionary<string, string>() { {"StoryId",storyToAdd.StoryId.ToString()} };
+            await _consulHttpClient.PostAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment",parameters, story.Attachments?.ToList());
             
             return CreatedAtRoute("GetStory",new { Id = storyToAdd.StoryId }, _mapper.Map<StoryDto>(storyToAdd));
         }

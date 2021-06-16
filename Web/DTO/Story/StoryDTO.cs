@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using iread_story.Web.DTO.Tag;
+using Microsoft.AspNetCore.Http;
 
 namespace iread_story.Web.DTO.Story
 {
     public class StoryDto
     {
-
-        public int StoryId { get; set; }
 
         public string Title { get; set; }
 
@@ -20,6 +19,8 @@ namespace iread_story.Web.DTO.Story
         public string Writer { get; set; }
         
         public ICollection<CreateTagDto> KeyWords { get; set; }
+        
+        public ICollection<IFormFile> Attachments { get; set; }
         
         public float Rating { get; set; }
     }

@@ -4,7 +4,7 @@ MAINTAINER Yazan Kassam, yazankassam.codavia@gmail.com
 
 WORKDIR /app
 
-ENV ASPNETCORE_URLS="http://story_ms:5000"
+ENV ASPNETCORE_URLS="http://*:5010"
 
 ENV ASPNETCORE_ENVIRONMENT=Development
 
@@ -12,7 +12,7 @@ ENV ConnectionStrings:DefaultConnection="Server=story_ms_db;Database=story_ms_db
 
 ENV ConsulConfig:Host="http://consul:8500"
 
-EXPOSE 5000
+EXPOSE 5010
 
 COPY ./publish .
 
