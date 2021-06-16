@@ -2,12 +2,14 @@ stages:
   - build
   - publish
   - build_docker_image_and_push_on_docker_hub
+  - deploy
 
 variables:
   DOCKER_USER_NAME: "yazankassamcodavia"
   DOCKER_PASSWORD: "yazankassamcod@v!@"
   DOCKER_ORGANIZATION_NAME: "iread"
   DOCKER_IMAGE_NAME: "story_ms"
+  DOCKER_IMAGE_AND_TAG: ""
   
 build:
   stage: build
@@ -44,6 +46,10 @@ dockerize_develop:
     - docker build -f Dockerfile -t "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}" .
     - docker login --username $DOCKER_USER_NAME --password $DOCKER_PASSWORD
     - docker push "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
+    - echo "DOCKER_IMAGE_AND_TAG=${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}" >> build.env
+  artifacts:
+    reports:
+      dotenv: build.env
 
 
 dockerize_master:
@@ -61,3 +67,28 @@ dockerize_master:
     - docker build -f Dockerfile -t "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}" .
     - docker login --username $DOCKER_USER_NAME --password $DOCKER_PASSWORD
     - docker push "${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
+    - echo "DOCKER_IMAGE_AND_TAG=${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}" >> build.env
+  artifacts:
+    reports:
+      dotenv: build.env
+
+
+
+deploy:
+  stage: deploy
+  image: alpine
+  only:
+    - develop
+    - master
+  before_script:
+    - apk add openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+  script:
+    - echo "$SSH_PRIVATE_KEY"
+    - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker pull ${DOCKER_IMAGE_AND_TAG} ;"
+  dependencies:
+    - dockerize_master
+    - dockerize_develop
