@@ -53,6 +53,23 @@ namespace iread_story.Web.Service
             return JsonConvert.DeserializeObject<T>(content);
         }
 
+        public async Task<T> PutAsync<T>(string serviceName, string requestUri, object obj)
+        {
+            var uri = await GetRequestUriAsync(serviceName, requestUri);
+            
+            var stringContent = new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json");
+            var response = await _client.PutAsync(uri,stringContent);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return default(T);
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            return JsonConvert.DeserializeObject<T>(content);
+        }
+
         private async Task<Uri> GetRequestUriAsync(string serviceName, string uri)
         {
             //Get all services registered on Consul

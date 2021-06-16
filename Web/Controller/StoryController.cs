@@ -58,7 +58,7 @@ namespace iread_story.Web.Controller
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddStory([FromBody] StoryDto story)
+        public async Task<IActionResult> AddStory([FromBody] CreateStoryDto story)
         {
     
             if (story == null)
@@ -97,7 +97,7 @@ namespace iread_story.Web.Controller
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult UpdateStory(int id, [FromBody] StoryDto story)
+        public async Task<IActionResult> UpdateStory(int id, [FromBody] UpdateStoryDto story)
         {
             if(story == null || !ModelState.IsValid){ return BadRequest(ModelState); }
 
@@ -109,7 +109,27 @@ namespace iread_story.Web.Controller
 
             var storyToUpdate = _mapper.Map<Story>(story);
             _repository.getStoryService.UpdateStory(id, storyToUpdate);
+            
+            await _consulHttpClient.PutAsync<TagWithIdDto[]>("tag_ms", "/api/tags", 
+                new TagsWithStoryId{
+                    tagsDtos = story.KeyWords.ToList()
+                    ,storyId = id
+                } );
+            
             return NoContent();
         }
+        
+        [HttpGet()]
+        [Route("GetStoriesByTagTitle/{title}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetStoriesByTagTitle(String title)
+        {
+            List<int> ids = await _consulHttpClient.GetAsync<List<int>>("tag_ms", $"/api/tags/GetStoriesIdsByTagTitle/{title}");
+
+            var result = _repository.getStoryService.GetStoriesByIds(ids);
+
+            return Ok(result);
+        }
+        
     }
 }

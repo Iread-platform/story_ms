@@ -7,8 +7,6 @@ namespace iread_story.Web.DTO.Story
     public class StoryDto
     {
 
-        public int StoryId { get; set; }
-
         public string Title { get; set; }
 
         public DateTime ReleaseDate { get; set; }

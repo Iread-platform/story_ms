@@ -9,5 +9,6 @@ namespace iread_story.Web.Service
     {
         Task<T> GetAsync<T>(string serviceName, string requestUri);
         Task<T> PostAsync<T>(string serviceName, string requestUri, Object obj);
+        Task<T> PutAsync<T>(string serviceName, string requestUri, Object obj);
     }
 }

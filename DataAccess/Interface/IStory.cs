@@ -15,6 +15,9 @@ namespace iread_story.DataAccess.Interface
         void DeleteStory(int id);
 
         bool Exists(int id);
+        
+        IEnumerable<Story> GetStoriesByIds(List<int> ids);
+        
 
     }
 }
