@@ -91,7 +91,7 @@ deploy:
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
   script:
-    
+    - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "cd ~; touch tes2t.txt"
     ## REMOVE CURRENT CNTAINER IF EXISTS
     - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker ps -q --filter ancestor=$DOCKER_ORGANIZATION_NAME/$DOCKER_IMAGE_NAME | grep -q . && docker stop $DOCKER_IMAGE_NAME && docker rm -fv $DOCKER_IMAGE_NAME;"
     ## REMOVE CURRENT VERSION OF IMAGE IF EXISTS
