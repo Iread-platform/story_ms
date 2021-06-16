@@ -2,7 +2,6 @@ stages:
   - build
   - publish
   - build_docker_image_and_push_on_docker_hub
-  - deploy_database
   - deploy
 
 variables:
@@ -75,26 +74,6 @@ dockerize_master:
 
 
 
-deploy_database:
-  stage: deploy_database
-  image: alpine
-  only:
-    - develop
-    - master
-  before_script:
-    - apk add openssh-client
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-  script:
-    - echo "$SSH_PRIVATE_KEY"
-    - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker pull ${DOCKER_IMAGE_AND_TAG} ;"
-    - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker run -p ${CONTAINER_PORT}:${CONTAINER_PORT} --name ${DOCKER_IMAGE_NAME} --hostname ${DOCKER_IMAGE_NAME} -d ${DOCKER_IMAGE_AND_TAG};"
-  dependencies:
-    - dockerize_master
-    - dockerize_develop
-
 
 
 
@@ -112,8 +91,11 @@ deploy:
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
   script:
-    - echo "$SSH_PRIVATE_KEY"
+    ## BUILD DOCKER IMAGE ON SERVER
     - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker pull ${DOCKER_IMAGE_AND_TAG} ;"
+    ## REMOVE CURRENT VERSION
+    - ssh -o StrictHostKeyChecking=no root@46.227.254.20 'docker ps -q --filter "name=${DOCKER_IMAGE_NAME}" | grep -q . && docker stop ${DOCKER_IMAGE_NAME} && docker rm -fv ${DOCKER_IMAGE_NAME} && docker rmi $(docker images ${DOCKER_IMAGE_NAME} -a -q)'
+    ## RUN THIS NEW VERSION
     - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker run -p 46.227.254.20:${CONTAINER_PORT}:${CONTAINER_PORT} --name ${DOCKER_IMAGE_NAME} --hostname ${DOCKER_IMAGE_NAME} -d ${DOCKER_IMAGE_AND_TAG};"
   dependencies:
     - dockerize_master
