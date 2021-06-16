@@ -9,6 +9,7 @@ using iread_story.DataAccess.Data;
 using iread_story.DataAccess.Interface;
 using iread_story.DataAccess.Repository;
 using iread_story.Web.Profile;
+using iread_story.Web.Service;
 using iread_story.Web.Util;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -75,6 +76,7 @@ namespace iread_story
                 config.AddProfile<AutoMapperProfile>();
             }).CreateMapper();
             services.AddSingleton(mapper);
+            services.AddHttpClient<IConsulHttpClientService,ConsulHttpClientService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 
 namespace iread_story.Web.DTO.Story
 {
@@ -17,6 +18,7 @@ namespace iread_story.Web.DTO.Story
         public string Writer { get; set; }
         
         public ICollection<string> Tags { get; set; }
+        public ICollection<IFormFile> Attachments { get; set; }
         
         public float Rating { get; set; }
     }
