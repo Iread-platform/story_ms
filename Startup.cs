@@ -62,7 +62,7 @@ namespace iread_story
                 consulConfig.Address = new Uri(address);
             }));
             services.AddConsulConfig(Configuration);
-            services.AddHttpClient<IConsulHttpClient, ConsulHttpClient>();
+            services.AddHttpClient<IConsulHttpClientService, ConsulHttpClientService>();
 
             
             // for swagger

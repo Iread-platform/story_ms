@@ -27,8 +27,9 @@ namespace iread_story.Web.Controller
         private readonly ILogger<StoryController> _logger;
         private readonly IPublicRepository _repository;
         private readonly IMapper _mapper;
-        private readonly IConsulHttpClient _consulHttpClient;
-        public StoryController(ILogger<StoryController> logger, IPublicRepository repository, IMapper mapper, IConsulHttpClient consulHttpClient)
+        private readonly IConsulHttpClientService _consulHttpClient;
+        private readonly string _attachmentsMs = "attachment_ms";
+        public StoryController(ILogger<StoryController> logger, IPublicRepository repository, IMapper mapper, IConsulHttpClientService consulHttpClient)
         {
             _logger = logger;
             _repository = repository;
@@ -60,7 +61,7 @@ namespace iread_story.Web.Controller
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddStory([FromBody] CreateStoryDto story)
+        public async Task<IActionResult> AddStory([FromForm] CreateStoryDto story)
         {
             if (story == null)
             {
@@ -69,15 +70,39 @@ namespace iread_story.Web.Controller
 
             Story storyToAdd = _mapper.Map<Story>(story);
             _repository.getStoryService.AddStory(storyToAdd);
-            
-            
-            await _consulHttpClient.PostAsync<TagWithIdDto[]>("tag_ms", "/api/tags", 
-                new TagsWithStoryId{
+
+            if (story.KeyWords != null)
+            {
+                TagsWithStoryId tagsWithStoryId = new TagsWithStoryId()
+                {
+                    storyId = storyToAdd.StoryId,
                     tagsDtos = story.KeyWords.ToList()
-                    ,storyId = storyToAdd.StoryId
-                } );
-            var parameters = new Dictionary<string, string>() { {"StoryId",storyToAdd.StoryId.ToString()} };
-            await _consulHttpClient.PostAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment",parameters, story.Attachments?.ToList());
+                };
+                try
+                {
+                    await _consulHttpClient.PostBodyAsync<TagWithIdDto[]>("tag_ms", "/api/tags", tagsWithStoryId);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                
+            }
+
+            if (story.Attachments != null)
+            {
+                var parameters = new Dictionary<string, string>() { {"StoryId",storyToAdd.StoryId.ToString()} };
+
+                try
+                {
+                    await _consulHttpClient.PostFormAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment",
+                        parameters, story.Attachments?.ToList());
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
             
             return CreatedAtRoute("GetStory",new { Id = storyToAdd.StoryId }, _mapper.Map<StoryDto>(storyToAdd));
         }
@@ -100,7 +125,7 @@ namespace iread_story.Web.Controller
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateStory(int id, [FromBody] UpdateStoryDto story)
+        public async Task<IActionResult> UpdateStory(int id, [FromForm] UpdateStoryDto story)
         {
             if(story == null || !ModelState.IsValid){ return BadRequest(ModelState); }
 
@@ -112,12 +137,15 @@ namespace iread_story.Web.Controller
 
             var storyToUpdate = _mapper.Map<Story>(story);
             _repository.getStoryService.UpdateStory(id, storyToUpdate);
-            
-            await _consulHttpClient.PutAsync<TagWithIdDto[]>("tag_ms", "/api/tags", 
-                new TagsWithStoryId{
-                    tagsDtos = story.KeyWords.ToList()
-                    ,storyId = id
-                } );
+
+            if (story.KeyWords != null)
+            {
+                await _consulHttpClient.PutBodyAsync<TagWithIdDto[]>("tag_ms", "/api/tags", 
+                    new TagsWithStoryId{
+                        tagsDtos = story.KeyWords.ToList()
+                        ,storyId = id
+                    });
+            }
             
             return NoContent();
         }

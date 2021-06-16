@@ -18,9 +18,9 @@ namespace iread_story.Web.DTO.Story
         
         public string Writer { get; set; }
         
-        public ICollection<CreateTagDto> KeyWords { get; set; }
+        public List<CreateTagDto> KeyWords { get; set; }
         
-        public ICollection<IFormFile> Attachments { get; set; }
+        public List<IFormFile> Attachments { get; set; }
         
         public float Rating { get; set; }
     }
