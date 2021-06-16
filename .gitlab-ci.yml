@@ -93,8 +93,8 @@ deploy:
   script:
     ## BUILD DOCKER IMAGE ON SERVER
     - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker pull ${DOCKER_IMAGE_AND_TAG} ;"
-    ## REMOVE CURRENT VERSION
-    - ssh -o StrictHostKeyChecking=no root@46.227.254.20 'docker ps -q --filter "name=${DOCKER_IMAGE_NAME}" | grep -q . && docker stop ${DOCKER_IMAGE_NAME} && docker rm -fv ${DOCKER_IMAGE_NAME} && docker rmi $(docker images ${DOCKER_IMAGE_NAME} -a -q)'
+    ## REMOVE CURRENT VERSION IF EXISTS
+    - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker ps -q --filter name=${DOCKER_IMAGE_NAME} | grep -q . && docker stop ${DOCKER_IMAGE_NAME} && docker rm -fv ${DOCKER_IMAGE_NAME} && docker rmi $(docker images ${DOCKER_IMAGE_NAME} -a -q)"
     ## RUN THIS NEW VERSION
     - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker run -p 46.227.254.20:${CONTAINER_PORT}:${CONTAINER_PORT} --name ${DOCKER_IMAGE_NAME} --hostname ${DOCKER_IMAGE_NAME} -d ${DOCKER_IMAGE_AND_TAG};"
   dependencies:
