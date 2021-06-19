@@ -39,12 +39,15 @@ namespace iread_story.Web.Controller
         }
 
         [HttpGet]
-        public IActionResult GetStories()
+        public async Task<IActionResult> GetStories()
         {
-            List<StoryDto> stories = new List<StoryDto>(); 
-                foreach (Story storey in _repository.getStoryService.GetStories())
+            List<ViewStoryDto> stories = new List<ViewStoryDto>(); 
+                foreach (Story story in _repository.getStoryService.GetStories())
                 {
-                    stories.Add(_mapper.Map<StoryDto>(storey));
+                    ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
+                    viewStory.Attachments =await GetAttachmentFromAttachmentMs(story.StoryId);
+                    viewStory.KeyWords =await GetTagsFromTagMs(story.StoryId);
+                    stories.Add(viewStory);
                 }
 
             return Ok(stories);
@@ -53,10 +56,13 @@ namespace iread_story.Web.Controller
         [HttpGet("{id:int}", Name = "GetStory")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult GetStory(int id)
+        public async Task<IActionResult> GetStory(int id)
         {
             Story story = _repository.getStoryService.GetStory(id);
-            return story == null ? NotFound() : Ok(story);
+            ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
+            viewStory.Attachments =await GetAttachmentFromAttachmentMs(id);
+            viewStory.KeyWords =await GetTagsFromTagMs(id);
+            return viewStory == null ? NotFound() : Ok(viewStory);
         }
         
         [HttpPost]
@@ -106,24 +112,9 @@ namespace iread_story.Web.Controller
             }
 
             ViewStoryDto addedStory = _mapper.Map<ViewStoryDto>(storyToAdd);
-            
-            try
-            {
-                addedStory.KeyWords = await _consulHttpClient.GetAsync<List<TagWithIdDto>>("tag_ms", $"api/tags/GetTagsByStoryId/{storyToAdd.StoryId}");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-            
-            try
-            {
-                addedStory.Attachments = await _consulHttpClient.GetAsync<List<AttachmentDTO>>(_attachmentsMs, $"api/attachment/GetAttachmentsByStoryId/{storyToAdd.StoryId}");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+
+            addedStory.KeyWords = await GetTagsFromTagMs(storyToAdd.StoryId);
+            addedStory.Attachments = await GetAttachmentFromAttachmentMs(storyToAdd.StoryId);
             
             return CreatedAtRoute("GetStory",new { Id = storyToAdd.StoryId }, addedStory);
         }
@@ -181,6 +172,34 @@ namespace iread_story.Web.Controller
             var result = _repository.getStoryService.GetStoriesByIds(ids);
 
             return Ok(result);
+        }
+
+        private async Task<List<AttachmentDTO>> GetAttachmentFromAttachmentMs(int storyId)
+        {
+            try
+            {
+                return await _consulHttpClient.GetAsync<List<AttachmentDTO>>(_attachmentsMs, $"api/attachment/GetAttachmentsByStoryId/{storyId}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            return null;
+        }
+
+        private async Task<List<TagWithIdDto>> GetTagsFromTagMs(int storyId)
+        {
+            try
+            {
+               return await _consulHttpClient.GetAsync<List<TagWithIdDto>>("tag_ms", $"api/tags/GetTagsByStoryId/{storyId}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            return null;
         }
         
     }
