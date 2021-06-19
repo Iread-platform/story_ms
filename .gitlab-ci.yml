@@ -39,7 +39,7 @@ deploy:
     - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker ps -q -a --filter ancestor=${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:0.6.8 | grep -q . && docker rm -fv ${DOCKER_IMAGE_NAME} || echo Not Found Stopped Container With Name = ${DOCKER_IMAGE_NAME} ;"
 
     ## REMOVE CURRENT VERSION OF IMAGE IF EXISTS
-    - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker images -q --filter reference=${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:0.6.8 | grep -q . && docker rmi $(docker images ${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME:}:0.6.8 -a -q) || echo Not Found Image With Name = ${DOCKER_IMAGE_NAME} ;"
+    - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker images -q --filter reference=${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:0.6.8 | grep -q . && docker rmi $(docker images ${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:0.6.8 -a -q) || echo Not Found Image With Name = ${DOCKER_IMAGE_NAME} ;"
 
 
 
