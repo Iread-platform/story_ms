@@ -103,9 +103,11 @@ deploy:
     - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker ps -a -q --filter name=${DOCKER_IMAGE_NAME} | grep -q -a . && docker rm -fv ${DOCKER_IMAGE_NAME} || echo Not Found Stopped Container With Name = ${DOCKER_IMAGE_NAME} ;"
 
     ## REMOVE CURRENT VERSION OF IMAGE IF EXISTS
-    - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker images -q --filter reference=${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME} | grep -q . && docker rmi $(docker images ${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME} -a -q) || echo Not Found Image With Name = ${DOCKER_IMAGE_NAME} ;"
+    - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker images -q --filter reference=${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME} | grep -q . && docker rmi $(docker images --format="{{.Repository}} {{.ID}}" |  grep "^${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME} " |  cut -d" " -f2 | tr "\r\n" " ") || echo Not Found Image With Name = ${DOCKER_IMAGE_NAME};"
+
     ## BUILD DOCKER IMAGE ON SERVER
     - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker pull ${DOCKER_IMAGE_AND_TAG} ;"
+    
     ## RUN THIS NEW VERSION
     - ssh -o StrictHostKeyChecking=no root@46.227.254.20 "docker run -p 46.227.254.20:${CONTAINER_PORT}:${CONTAINER_PORT} --name ${DOCKER_IMAGE_NAME} --hostname ${DOCKER_IMAGE_NAME} -d ${DOCKER_IMAGE_AND_TAG};"
   dependencies:
