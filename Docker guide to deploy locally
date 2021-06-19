@@ -12,17 +12,17 @@ docker run --hostname dns.mageddo --restart=unless-stopped -p 5380:5380 \
 ##############################################################
 
 ##build docker image for mysql:
-docker build -f DockerizeDb/Dockerfile -t story_ms_db .
+docker build -f DockerizeDb/Dockerfile -t mysql_story_ms .
 
 ##run mysql container:
 docker run -p 3310:3306 \
- --name story_ms_db \
- --hostname story_ms_db \
+ --name mysql_story_ms \
+ --hostname mysql_story_ms \
  -e MYSQL_ROOT_PASSWORD=p@$$word \
- -d story_ms_db
+ -d mysql_story_ms
 
 ##attach mysql container:
-docker exec -it story_ms_db bash
+docker exec -it mysql_story_ms bash
 
 ##login (to verify):
 mysql --host=127.0.0.1 --protocol=TCP -u codavia -p
