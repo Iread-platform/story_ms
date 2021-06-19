@@ -8,6 +8,7 @@ namespace iread_story.Web.Profile
         public AutoMapperProfile()
         {
             CreateMap<Story, StoryDto>().ReverseMap();
+            CreateMap<Story, ViewStoryDto>().ReverseMap();
         }
     }
 }

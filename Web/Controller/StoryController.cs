@@ -8,6 +8,7 @@ using Consul;
 using iread_story.DataAccess.Data.Entity;
 using iread_story.DataAccess.Data.Types;
 using iread_story.DataAccess.Interface;
+using iread_story.Web.DTO;
 using iread_story.Web.DTO.Story;
 using iread_story.Web.DTO.Tag;
 using iread_story.Web.Service;
@@ -103,8 +104,28 @@ namespace iread_story.Web.Controller
                     Console.WriteLine(e.Message);
                 }
             }
+
+            ViewStoryDto addedStory = _mapper.Map<ViewStoryDto>(storyToAdd);
             
-            return CreatedAtRoute("GetStory",new { Id = storyToAdd.StoryId }, _mapper.Map<StoryDto>(storyToAdd));
+            try
+            {
+                addedStory.KeyWords = await _consulHttpClient.GetAsync<List<TagWithIdDto>>("tag_ms", $"api/tags/GetTagsByStoryId/{storyToAdd.StoryId}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            
+            try
+            {
+                addedStory.Attachments = await _consulHttpClient.GetAsync<List<AttachmentDTO>>(_attachmentsMs, $"api/attachment/GetAttachmentsByStoryId/{storyToAdd.StoryId}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            
+            return CreatedAtRoute("GetStory",new { Id = storyToAdd.StoryId }, addedStory);
         }
         
         [HttpDelete("{id:int}")]
