@@ -49,5 +49,10 @@ namespace iread_story.DataAccess.Service
          {
              return _context.Stories.Any(story => story.StoryId.Equals(id));
          }
+
+         public IEnumerable<Story> GetStoriesByIds(List<int> ids)
+         {
+             return _context.Stories.Where(story => ids.Contains(story.StoryId)).AsEnumerable();
+         }
      }
      }
