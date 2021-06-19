@@ -8,7 +8,7 @@ ENV ASPNETCORE_URLS="http://story_ms"
 
 ENV ASPNETCORE_ENVIRONMENT=Development
 
-ENV ConnectionStrings:DefaultConnection="Server=story_ms_db;Database=story_ms_db;Uid=codavia;Pwd=cod@v!@; convert zero datetime=True"
+ENV ConnectionStrings:DefaultConnection="Server=mysql_story_ms;Database=story_ms_db;Uid=codavia;Pwd=cod@v!@; convert zero datetime=True"
 
 ENV ConsulConfig:Host="http://consul:8500"
 
