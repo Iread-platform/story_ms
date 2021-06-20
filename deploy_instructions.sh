@@ -3,6 +3,8 @@
 DOCKER_ORGANIZATION_NAME=$1
 DOCKER_IMAGE_NAME=$2
 DOCKER_CONTAINER_NAME=$2
+DOCKER_IMAGE_AND_TAG=$3
+CONTAINER_PORT=$4
 
 
 echo ======== docker images ========;
@@ -25,3 +27,9 @@ docker ps -a -q --filter name=${DOCKER_CONTAINER_NAME} | grep -q -a . && docker 
 
 echo ======== remove last docker images of this micro service ========;
 docker images -q --filter reference=${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME} | grep -q . && docker rmi $(docker images --format="{{.Repository}} {{.ID}}" |  grep "^${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME} " |  cut -d" " -f2 | tr "\r\n" " ") || echo Not Found Image With Name = ${DOCKER_IMAGE_NAME};
+
+echo ======== pull docker image on server ========;
+docker pull ${DOCKER_IMAGE_AND_TAG};
+
+echo ======== run docker container ========;
+docker run -p 46.227.254.20:${CONTAINER_PORT}:${CONTAINER_PORT} --name ${DOCKER_CONTAINER_NAME} --hostname ${DOCKER_CONTAINER_NAME} -d ${DOCKER_IMAGE_AND_TAG};
