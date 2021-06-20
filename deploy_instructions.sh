@@ -12,7 +12,7 @@ echo ======== docker containers ========;
 docker ps --format {{.Names}};
 
 echo ======== last docker container of this micro service ========;
-docker ps -aqf name=${DOCKER_CONTAINER_NAME}
+docker ps -a -q --filter name=${DOCKER_CONTAINER_NAME}
 
 echo ======== last docker images of this micro service ========;
 docker images -q --filter reference=${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME};
