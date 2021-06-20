@@ -7,6 +7,14 @@ DOCKER_IMAGE_AND_TAG=$3
 CONTAINER_PORT=$4
 
 
+echo ======== variables and values ========;
+
+echo DOCKER_ORGANIZATION_NAME=${DOCKER_ORGANIZATION_NAME}
+echo DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME}
+echo DOCKER_CONTAINER_NAME=${DOCKER_CONTAINER_NAME}
+echo DOCKER_IMAGE_AND_TAG=${DOCKER_IMAGE_AND_TAG}
+echo CONTAINER_PORT=${CONTAINER_PORT}
+
 echo ======== docker images ========;
 docker images --format {{.Repository}}:{{.Tag}};
 
