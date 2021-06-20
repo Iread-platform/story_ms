@@ -26,6 +26,8 @@ deploy:
     
     - echo image name = ${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}:0.6.8
     - echo container name = ${DOCKER_IMAGE_NAME}
+
+    - ssh -o StrictHostKeyChecking=no root@46.227.254.20 'bash -s' <  deploy_instructions.sh ${DOCKER_ORGANIZATION_NAME} ${DOCKER_IMAGE_NAME}
     - ssh -o StrictHostKeyChecking=no root@46.227.254.20 " echo ======== docker images ========; docker images --format {{.Repository}}:{{.Tag}}; echo ======== docker containers ========; docker ps --format {{.Names}}; echo ======== last docker images of this micro service ========; docker images -q --filter reference=${DOCKER_ORGANIZATION_NAME}/${DOCKER_IMAGE_NAME}; "
     
 
