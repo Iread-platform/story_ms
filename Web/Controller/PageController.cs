@@ -83,5 +83,40 @@ namespace iread_story.Web.Controller
 
             return CreatedAtAction("GetPage", new { id = pageEntity.PageId }, _mapper.Map<PageDto>(pageEntity));
         }
+        
+        // PUT: api/page/update
+        [HttpPut("update")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> PutReview([FromBody] PageUpdateDto pageUpdateDto)
+        {
+            if (pageUpdateDto==null)
+            {
+                return BadRequest();
+            }
+            
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
+            
+            Page oldPage = await _pageService.GetPageById(pageUpdateDto.PageId);
+
+            if (oldPage == null)
+            {
+                return NotFound();
+            }
+            
+
+            Page pageEntity = _mapper.Map<Page>(pageUpdateDto);
+
+            if (!_pageService.UpdatePage(pageEntity , oldPage))
+            {
+                return BadRequest();
+            }
+
+            return NoContent();
+        }
     }
 }
