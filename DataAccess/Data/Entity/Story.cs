@@ -26,5 +26,7 @@ namespace iread_story.DataAccess.Data.Entity
         public string Writer { get; set; }
         
         public int Rating { get; set; }
+
+        public List<Page> Pages { get; set; }
     }
 }
