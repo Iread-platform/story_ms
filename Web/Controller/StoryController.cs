@@ -38,7 +38,7 @@ namespace iread_story.Web.Controller
             _consulHttpClient = consulHttpClient;
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetStories()
         {
             List<ViewStoryDto> stories = new List<ViewStoryDto>(); 
@@ -53,7 +53,7 @@ namespace iread_story.Web.Controller
             return Ok(stories);
         }
         
-        [HttpGet("{id:int}", Name = "GetStory")]
+        [HttpGet("get/{id:int}", Name = "GetStory")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetStory(int id)
@@ -65,7 +65,7 @@ namespace iread_story.Web.Controller
             return viewStory == null ? NotFound() : Ok(viewStory);
         }
         
-        [HttpPost]
+        [HttpPost("add")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddStory([FromForm] CreateStoryDto story)
@@ -119,7 +119,7 @@ namespace iread_story.Web.Controller
             return CreatedAtRoute("GetStory",new { Id = storyToAdd.StoryId }, addedStory);
         }
         
-        [HttpDelete("{id:int}")]
+        [HttpDelete("delete/{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -133,7 +133,7 @@ namespace iread_story.Web.Controller
             return _repository.getStoryService.Exists(id) ?   StatusCode(500) :   Ok();
         }
         
-        [HttpPut("{id:int}")]
+        [HttpPut("update/{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
