@@ -52,7 +52,12 @@ namespace iread_story.DataAccess.Repository
 
         public bool IsStoryExists(int storyId)
         {
-            return _context.Stories.Any(r => r.StoryId == storyId);
+            return _context.Stories.Any(s => s.StoryId == storyId);
+        }
+
+        public bool IsExists(int id)
+        {
+            return _context.Pages.Any(p => p.PageId == id);
         }
     }
 }

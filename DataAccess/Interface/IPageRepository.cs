@@ -17,5 +17,6 @@ namespace iread_story.DataAccess.Interface
         public void Update(int id, Page page, Page oldPage);
 
         bool IsStoryExists(int storyId);
+        bool IsExists(int id);
     }
 }

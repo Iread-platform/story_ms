@@ -57,7 +57,7 @@ namespace iread_story.Web.Controller
         [HttpPost("add")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult PostReview([FromBody]PageCreateDto pageCreateDto)
+        public IActionResult PostPage([FromBody]PageCreateDto pageCreateDto)
         {
             if (pageCreateDto == null)
             {
@@ -89,7 +89,7 @@ namespace iread_story.Web.Controller
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> PutReview([FromBody] PageUpdateDto pageUpdateDto)
+        public async Task<IActionResult> PutPage([FromBody] PageUpdateDto pageUpdateDto)
         {
             if (pageUpdateDto==null)
             {
@@ -116,6 +116,26 @@ namespace iread_story.Web.Controller
                 return BadRequest();
             }
 
+            return NoContent();
+        }
+        
+        // DELETE: api/page/delete/1
+        [HttpDelete("delete/{id}")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult DeletePage([FromRoute] int id)
+        {
+            
+            if (!_pageService.IsExists(id))
+            {
+                return NotFound();
+            }
+
+            if (!_pageService.Delete(id))
+            {
+                return BadRequest();
+            }
             return NoContent();
         }
     }
