@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using iread_story.DataAccess.Data;
 using iread_story.DataAccess.Data.Entity;
 using iread_story.DataAccess.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace iread_story.DataAccess.Repository
 {
@@ -15,29 +17,37 @@ namespace iread_story.DataAccess.Repository
             _context = context;
         }
         
-        public Task<Page> GetById(int id)
+        public async Task<Page> GetById(int id)
         {
-            throw new System.NotImplementedException();
+            return await _context.Pages.FindAsync(id);
         }
 
         public Task<List<Page>> GetByStory(int storyId)
         {
-            throw new System.NotImplementedException();
+            return _context.Pages.Where(r => r.StoryId == storyId).ToListAsync();
         }
 
         public void Insert(Page page)
         {
-            throw new System.NotImplementedException();
+            _context.Pages.Add(page);
+            _context.SaveChangesAsync();
         }
 
         public void Delete(int id)
         {
-            throw new System.NotImplementedException();
+            var pageToRemove = new Page() { PageId = id };
+            _context.Pages.Attach(pageToRemove);
+            _context.Pages.Remove(pageToRemove);
+            _context.SaveChangesAsync();
         }
 
         public void Update(int id, Page page, Page oldPage)
         {
-            throw new System.NotImplementedException();
+            _context.Entry(oldPage).State = EntityState.Modified;
+            _context.Pages.Attach(oldPage);
+            oldPage.Content = page.Content;
+            _context.Update(oldPage);
+            _context.SaveChanges();
         }
     }
 }
