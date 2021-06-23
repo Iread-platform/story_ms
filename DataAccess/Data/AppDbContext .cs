@@ -24,6 +24,7 @@ namespace iread_story.DataAccess.Data
 
         //entities
         public DbSet<Story> Stories { get; set; }
+        public DbSet<Page> Pages { get; set; }
 
     }
 }
