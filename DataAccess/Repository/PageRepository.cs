@@ -19,7 +19,7 @@ namespace iread_story.DataAccess.Repository
         
         public async Task<Page> GetById(int id)
         {
-            return await _context.Pages.FindAsync(id);
+            return await _context.Pages.Include(p => p.Story).SingleOrDefaultAsync(p => p.PageId==id);
         }
 
         public Task<List<Page>> GetByStory(int storyId)
@@ -48,6 +48,11 @@ namespace iread_story.DataAccess.Repository
             oldPage.Content = page.Content;
             _context.Update(oldPage);
             _context.SaveChanges();
+        }
+
+        public bool IsStoryExists(int storyId)
+        {
+            return _context.Stories.Any(r => r.StoryId == storyId);
         }
     }
 }

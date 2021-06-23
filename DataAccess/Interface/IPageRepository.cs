@@ -15,5 +15,7 @@ namespace iread_story.DataAccess.Interface
         public void Delete(int id);
         
         public void Update(int id, Page page, Page oldPage);
+
+        bool IsStoryExists(int storyId);
     }
 }

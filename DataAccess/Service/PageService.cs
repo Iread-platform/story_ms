@@ -64,5 +64,10 @@ namespace iread_story.DataAccess.Service
         {
             return await _repository.GetPageRepository.GetByStory(storyId);
         }
+
+        public bool IsStoryExists(int storyId)
+        {
+            return _repository.GetPageRepository.IsStoryExists(storyId);
+        }
     }
 }

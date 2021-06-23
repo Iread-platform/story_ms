@@ -8,6 +8,7 @@ using Consul;
 using iread_story.DataAccess.Data;
 using iread_story.DataAccess.Interface;
 using iread_story.DataAccess.Repository;
+using iread_story.DataAccess.Service;
 using iread_story.Web.Profile;
 using iread_story.Web.Service;
 using iread_story.Web.Util;
@@ -73,6 +74,11 @@ namespace iread_story
             
             // Inject the public repository
             services.AddScoped<IPublicRepository, PublicRepository>();
+            
+            //for page service
+            services.AddScoped<PageService>();
+            
+            
             IMapper mapper = new MapperConfiguration(config=>{
                 config.AddProfile<AutoMapperProfile>();
             }).CreateMapper();
