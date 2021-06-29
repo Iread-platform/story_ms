@@ -14,6 +14,10 @@ namespace iread_story.Web.Util
         public const String FILE_EXTENSION_NOT_ALLOWED = "File extension is not allowed!.";
         public const String AUDIO_FILE_EXTENSION_NOT_ALLOWED = "Audio file extension is not allowed, Must be MP3!.";
         public const String COVER_FILE_EXTENSION_NOT_ALLOWED = "Cover file extension is not allowed, Must be png or jpg!.";
+        public const String PAGE_ID_REQUIRED = "Page id is required.";
+        public const String PAGE_CONTENT_REQUIRED = "Page content is required.";
+        public const String INVALID_PAGE_ID_VALUE = "Invalid page id value";
+        
 
         public static List<String> ModelStateParser(ModelStateDictionary modelStateDictionary)
         {

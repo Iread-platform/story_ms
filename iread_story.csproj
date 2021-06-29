@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="DataAccess\Service" />
     <Folder Include="Migrations" />
   </ItemGroup>
 

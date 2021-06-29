@@ -1,20 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using Consul;
 using iread_story.DataAccess.Data;
 using iread_story.DataAccess.Interface;
 using iread_story.DataAccess.Repository;
-using iread_story.Web.Profile;
 using iread_story.Web.Service;
+using iread_story.Web.Profile;
 using iread_story.Web.Util;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -73,8 +68,13 @@ namespace iread_story
             
             // Inject the public repository
             services.AddScoped<IPublicRepository, PublicRepository>();
+            
             // Inject story service
             services.AddScoped<StoryService>();
+  
+            //for page service
+            services.AddScoped<PageService>();
+            
             
             IMapper mapper = new MapperConfiguration(config=>{
                 config.AddProfile<AutoMapperProfile>();
