@@ -5,13 +5,7 @@ namespace iread_story.Web.DTO
 {
     public class AttachmentsWithStoryId
     {
-        public AttachmentsWithStoryId(int storyId, List<IFormFile> attachment)
-        {
-            this.Attachment = attachment;
-            this.StoryId = storyId;
-        }
-
-        public int StoryId;
-        public List<IFormFile> Attachment;
+        public int Id { get; set; }
+        public string Name { get; set; }
     }   
 }
