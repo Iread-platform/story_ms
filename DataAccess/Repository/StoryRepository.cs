@@ -24,7 +24,7 @@ namespace iread_story.DataAccess.Repository
 
         public void UpdateStory(int id, Story story, Story oldStory)
         {
-            
+            //TODO resolve this bug when update story the cover id and audio id it assign to zero
             _context.Entry(oldStory).State = EntityState.Detached;
             _context.SaveChanges();
             

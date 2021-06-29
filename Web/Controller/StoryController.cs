@@ -109,46 +109,6 @@ namespace iread_story.Web.Controller
             }
 
             return CreatedAtRoute("GetStory", new {Id = storyToAdd.StoryId}, storyToAdd);
-            // Story storyToAdd = _mapper.Map<Story>(story);
-            // _repository.getStoryService.AddStory(storyToAdd);
-            //
-            // if (story.KeyWords != null)
-            // {
-            //     TagsWithStoryId tagsWithStoryId = new TagsWithStoryId()
-            //     {
-            //         storyId = storyToAdd.StoryId,
-            //         tagsDtos = story.KeyWords.ToList()
-            //     };
-            //     try
-            //     {
-            //         await _consulHttpClient.PostBodyAsync<TagWithIdDto[]>("tag_ms", "/api/tags/add", tagsWithStoryId);
-            //     }
-            //     catch (Exception e)
-            //     {
-            //         Console.WriteLine(e.Message);
-            //     }
-            //     
-            // }
-            //
-            // if (story.StoryAudio != null)
-            // {
-            //     var parameters = new Dictionary<string, string>() { {"StoryId",storyToAdd.StoryId.ToString()} };
-            //
-            //     try
-            //     {
-            //         await _consulHttpClient.PostFormAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment/add",
-            //             parameters, story.Attachments?.ToList());
-            //     }
-            //     catch (Exception e)
-            //     {
-            //         Console.WriteLine(e.Message);
-            //     }
-            // }
-            //
-            // ViewStoryDto addedStory = _mapper.Map<ViewStoryDto>(storyToAdd);
-            //
-            // addedStory.KeyWords = await GetTagsFromTagMs(storyToAdd.StoryId);
-            // addedStory.Attachments = await GetAttachmentFromAttachmentMs(storyToAdd.StoryId);
         }
 
         [HttpPut("addAudio")]
@@ -175,31 +135,50 @@ namespace iread_story.Web.Controller
                 return NotFound();
             }
             
-            //Insert attachment before update story
+            //update old attachment if story has previous audio OR insert new attachment
             var parameters = new Dictionary<string, string>() { {"StoryId",story.StoryId.ToString()} };
 
             List<IFormFile> attachments = new List<IFormFile>();
             attachments.Add(storyWithAudio.StoryAudio);
-
-            AttachmentsWithStoryId attachmentAfterPost = new AttachmentsWithStoryId();
-            try
+            
+            AttachmentsWithStoryId currentAttachment;
+            
+            //update old attachment if story has previous audio
+            if (story.AudioId != 0)
             {
-                attachmentAfterPost = await _consulHttpClient.PostFormAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment/add",
-                    parameters, attachments?.ToList());
+                try
+                {
+                    await _consulHttpClient.PutFormAsync<AttachmentsWithStoryId>(_attachmentsMs, $"api/Attachment/update/{story.AudioId}",
+                        parameters, attachments?.ToList());
+                }
+                catch (Exception e)
+                {
+                    ModelState.AddModelError("Audio", e.Message);
+                    return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+                }
             }
-            catch (Exception e)
+            else
             {
-                ModelState.AddModelError("Audio", e.Message);
-                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+                //Insert attachment before update story
+                try
+                {
+                    currentAttachment = await _consulHttpClient.PostFormAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment/add",
+                        parameters, attachments?.ToList());
+                }
+                catch (Exception e)
+                {
+                    ModelState.AddModelError("Audio", e.Message);
+                    return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+                }
+                
+                //Insert audio id to story
+                story.AudioId = currentAttachment.Id;
+                if (!_storyService.UpdateStory(story.StoryId, story, story))
+                {
+                    return BadRequest();
+                }
             }
             
-            //Insert audio id to story
-            story.AudioId = attachmentAfterPost.Id;
-            if (!_storyService.UpdateStory(story.StoryId, story, story))
-            {
-                return BadRequest();
-            }
-
             return NoContent();
         }
 
@@ -294,7 +273,25 @@ namespace iread_story.Web.Controller
             }
         
             Story storyEntity = _mapper.Map<Story>(story);
-            
+
+            if (story.KeyWords != null)
+            {
+                TagsWithStoryId tagsWithStoryId = new TagsWithStoryId()
+                {
+                    storyId = storyEntity.StoryId,
+                    tagsDtos = story.KeyWords.ToList()
+                };
+                try
+                {
+                    await _consulHttpClient.PostBodyAsync<TagWithIdDto[]>("tag_ms", "/api/tags/add", tagsWithStoryId);
+                }
+                catch (Exception e)
+                {
+                    ModelState.AddModelError("Tag", e.Message);
+                    return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+                }
+            }
+
             if (!_storyService.UpdateStory(storyEntity.StoryId, storyEntity, oldStory))
             {
                 return BadRequest();
@@ -312,8 +309,7 @@ namespace iread_story.Web.Controller
             return NoContent();
         }
         
-        [HttpGet()]
-        [Route("GetStoriesByTagTitle/{title}")]
+        [HttpGet("GetStoriesByTagTitle/{title}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetStoriesByTagTitle(String title)
         {
