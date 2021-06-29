@@ -9,8 +9,8 @@ using iread_story.DataAccess.Data;
 namespace iread_story.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20210529104025_AddDescriptionField")]
-    partial class AddDescriptionField
+    [Migration("20210629092620_initMigration")]
+    partial class initMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -25,11 +25,14 @@ namespace iread_story.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<int>("AudioId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CoverId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("ReleaseDate")
                         .HasColumnType("datetime");
@@ -41,7 +44,6 @@ namespace iread_story.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Writer")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("StoryId");

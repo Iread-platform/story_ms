@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Consul;
 using iread_story.DataAccess.Data.Entity;
-using iread_story.DataAccess.Data.Types;
 using iread_story.DataAccess.Interface;
 using iread_story.Web.DTO;
+using iread_story.Web.DTO.Review;
 using iread_story.Web.DTO.Story;
 using iread_story.Web.DTO.Tag;
 using iread_story.Web.Service;
+using iread_story.Web.Util;
 using iread_story.Web.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,183 +25,222 @@ namespace iread_story.Web.Controller
     [Route("api/[controller]/")]
     public class StoryController : ControllerBase
     {
-
         private readonly ILogger<StoryController> _logger;
-        private readonly IPublicRepository _repository;
         private readonly IMapper _mapper;
         private readonly IConsulHttpClientService _consulHttpClient;
         private readonly string _attachmentsMs = "attachment_ms";
-        public StoryController(ILogger<StoryController> logger, IPublicRepository repository, IMapper mapper, IConsulHttpClientService consulHttpClient)
+        private readonly string _reviewMs = "review_ms";
+        private readonly StoryService _storyService;
+
+        public StoryController(ILogger<StoryController> logger, IMapper mapper,
+            IConsulHttpClientService consulHttpClient, StoryService storyService)
         {
             _logger = logger;
-            _repository = repository;
+
             _mapper = mapper;
             _consulHttpClient = consulHttpClient;
+            _storyService = storyService;
         }
 
         [HttpGet("all")]
         public async Task<IActionResult> GetStories()
         {
-            List<ViewStoryDto> stories = new List<ViewStoryDto>(); 
-                foreach (Story story in _repository.getStoryService.GetStories())
-                {
-                    ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
-                    viewStory.Attachments =await GetAttachmentFromAttachmentMs(story.StoryId);
-                    viewStory.KeyWords =await GetTagsFromTagMs(story.StoryId);
-                    stories.Add(viewStory);
-                }
-
-            return Ok(stories);
-        }
-        
-        [HttpGet("get/{id:int}", Name = "GetStory")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetStory(int id)
-        {
-            Story story = _repository.getStoryService.GetStory(id);
-            ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
-            viewStory.Attachments =await GetAttachmentFromAttachmentMs(id);
-            viewStory.KeyWords =await GetTagsFromTagMs(id);
-            return viewStory == null ? NotFound() : Ok(viewStory);
-        }
-        
-        [HttpPost("add")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddStory([FromForm] CreateStoryDto story)
-        {
-            if (story == null)
-            {
-                return BadRequest(ModelState);
-            }
-
-            Story storyToAdd = _mapper.Map<Story>(story);
-            _repository.getStoryService.AddStory(storyToAdd);
-
-            if (story.KeyWords != null)
-            {
-                TagsWithStoryId tagsWithStoryId = new TagsWithStoryId()
-                {
-                    storyId = storyToAdd.StoryId,
-                    tagsDtos = story.KeyWords.ToList()
-                };
-                try
-                {
-                    await _consulHttpClient.PostBodyAsync<TagWithIdDto[]>("tag_ms", "/api/tags", tagsWithStoryId);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
-                
-            }
-
-            if (story.Attachments != null)
-            {
-                var parameters = new Dictionary<string, string>() { {"StoryId",storyToAdd.StoryId.ToString()} };
-
-                try
-                {
-                    await _consulHttpClient.PostFormAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment",
-                        parameters, story.Attachments?.ToList());
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
-            }
-
-            ViewStoryDto addedStory = _mapper.Map<ViewStoryDto>(storyToAdd);
-
-            addedStory.KeyWords = await GetTagsFromTagMs(storyToAdd.StoryId);
-            addedStory.Attachments = await GetAttachmentFromAttachmentMs(storyToAdd.StoryId);
-            
-            return CreatedAtRoute("GetStory",new { Id = storyToAdd.StoryId }, addedStory);
-        }
-        
-        [HttpDelete("delete/{id:int}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult DeleteStory(int id)
-        {
-            if (!_repository.getStoryService.Exists(id))
-            {
-                return NotFound();
-            }
-            _repository.getStoryService.DeleteStory(id);
-            return _repository.getStoryService.Exists(id) ?   StatusCode(500) :   Ok();
-        }
-        
-        [HttpPut("update/{id:int}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateStory(int id, [FromForm] UpdateStoryDto story)
-        {
-            if(story == null || !ModelState.IsValid){ return BadRequest(ModelState); }
-
-            story.StoryId = id; 
-            if (!_repository.getStoryService.Exists(id))
+            List<ViewStoryDto> viewStories = new List<ViewStoryDto>();
+            List<Story> stories = _storyService.GetStories();
+            if (!stories.Any())
             {
                 return NotFound();
             }
 
-            var storyToUpdate = _mapper.Map<Story>(story);
-            _repository.getStoryService.UpdateStory(id, storyToUpdate);
-
-            if (story.KeyWords != null)
+            foreach (Story story in stories)
             {
-                await _consulHttpClient.PutBodyAsync<TagWithIdDto[]>("tag_ms", "/api/tags", 
-                    new TagsWithStoryId{
-                        tagsDtos = story.KeyWords.ToList()
-                        ,storyId = id
-                    });
+                ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
+                viewStory.StoryAudio = await GetAttachmentFromAttachmentMs(story.AudioId);
+                viewStory.StoryCover = await GetAttachmentFromAttachmentMs(story.CoverId);
+                viewStory.Rating = await GetReviewFromReviewMs(story.StoryId);
+                viewStory.KeyWords = await GetTagsFromTagMs(story.StoryId);
+                viewStories.Add(viewStory);
             }
             
-            return NoContent();
+            return Ok(viewStories);
         }
-        
-        [HttpGet()]
-        [Route("GetStoriesByTagTitle/{title}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetStoriesByTagTitle(String title)
-        {
-            List<int> ids = await _consulHttpClient.GetAsync<List<int>>("tag_ms", $"/api/tags/GetStoriesIdsByTagTitle/{title}");
-
-            var result = _repository.getStoryService.GetStoriesByIds(ids);
-
-            return Ok(result);
-        }
-
-        private async Task<List<AttachmentDTO>> GetAttachmentFromAttachmentMs(int storyId)
+        //
+        // [HttpGet("get/{id:int}", Name = "GetStory")]
+        // [ProducesResponseType(StatusCodes.Status200OK)]
+        // [ProducesResponseType(StatusCodes.Status404NotFound)]
+        // public async Task<IActionResult> GetStory(int id)
+        // {
+        //     Story story = _repository.getStoryService.GetStory(id);
+        //     ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
+        //     viewStory.Attachments = await GetAttachmentFromAttachmentMs(id);
+        //     viewStory.KeyWords = await GetTagsFromTagMs(id);
+        //     return viewStory == null ? NotFound() : Ok(viewStory);
+        // }
+        //
+        // [HttpPost("add")]
+        // [ProducesResponseType(StatusCodes.Status201Created)]
+        // [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        // public async Task<IActionResult> AddStory([FromForm] CreateStoryTitleDto storyWithTitle)
+        // {
+        //     if (storyWithTitle == null)
+        //     {
+        //         return BadRequest(ModelState);
+        //     }
+        //
+        //     if (!ModelState.IsValid)
+        //     {
+        //         return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+        //     }
+        //
+        //     Story storyToAdd = _mapper.Map<Story>(storyWithTitle);
+        //     _repository.getStoryService.AddStory(storyToAdd);
+        //
+        //     // Story storyToAdd = _mapper.Map<Story>(story);
+        //     // _repository.getStoryService.AddStory(storyToAdd);
+        //     //
+        //     // if (story.KeyWords != null)
+        //     // {
+        //     //     TagsWithStoryId tagsWithStoryId = new TagsWithStoryId()
+        //     //     {
+        //     //         storyId = storyToAdd.StoryId,
+        //     //         tagsDtos = story.KeyWords.ToList()
+        //     //     };
+        //     //     try
+        //     //     {
+        //     //         await _consulHttpClient.PostBodyAsync<TagWithIdDto[]>("tag_ms", "/api/tags/add", tagsWithStoryId);
+        //     //     }
+        //     //     catch (Exception e)
+        //     //     {
+        //     //         Console.WriteLine(e.Message);
+        //     //     }
+        //     //     
+        //     // }
+        //     //
+        //     // if (story.StoryAudio != null)
+        //     // {
+        //     //     var parameters = new Dictionary<string, string>() { {"StoryId",storyToAdd.StoryId.ToString()} };
+        //     //
+        //     //     try
+        //     //     {
+        //     //         await _consulHttpClient.PostFormAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment/add",
+        //     //             parameters, story.Attachments?.ToList());
+        //     //     }
+        //     //     catch (Exception e)
+        //     //     {
+        //     //         Console.WriteLine(e.Message);
+        //     //     }
+        //     // }
+        //     //
+        //     // ViewStoryDto addedStory = _mapper.Map<ViewStoryDto>(storyToAdd);
+        //     //
+        //     // addedStory.KeyWords = await GetTagsFromTagMs(storyToAdd.StoryId);
+        //     // addedStory.Attachments = await GetAttachmentFromAttachmentMs(storyToAdd.StoryId);
+        //
+        //     return CreatedAtRoute("GetStory", new {Id = storyToAdd.StoryId}, storyToAdd);
+        // }
+        //
+        // [HttpDelete("delete/{id:int}")]
+        // [ProducesResponseType(StatusCodes.Status200OK)]
+        // [ProducesResponseType(StatusCodes.Status404NotFound)]
+        // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        // public IActionResult DeleteStory(int id)
+        // {
+        //     if (!_repository.getStoryService.Exists(id))
+        //     {
+        //         return NotFound();
+        //     }
+        //
+        //     _repository.getStoryService.DeleteStory(id);
+        //     return _repository.getStoryService.Exists(id) ? StatusCode(500) : Ok();
+        // }
+        //
+        // [HttpPut("update/{id:int}")]
+        // [ProducesResponseType(StatusCodes.Status200OK)]
+        // [ProducesResponseType(StatusCodes.Status404NotFound)]
+        // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        // public async Task<IActionResult> UpdateStory(int id, [FromForm] UpdateStoryDto story)
+        // {
+        //     if (story == null || !ModelState.IsValid)
+        //     {
+        //         return BadRequest(ModelState);
+        //     }
+        //
+        //     story.StoryId = id;
+        //     if (!_repository.getStoryService.Exists(id))
+        //     {
+        //         return NotFound();
+        //     }
+        //
+        //     var storyToUpdate = _mapper.Map<Story>(story);
+        //     _repository.getStoryService.UpdateStory(id, storyToUpdate);
+        //
+        //     if (story.KeyWords != null)
+        //     {
+        //         await _consulHttpClient.PutBodyAsync<TagWithIdDto[]>("tag_ms", "/api/tags/update",
+        //             new TagsWithStoryId
+        //             {
+        //                 tagsDtos = story.KeyWords.ToList(), storyId = id
+        //             });
+        //     }
+        //
+        //     return NoContent();
+        // }
+        //
+        // [HttpGet()]
+        // [Route("GetStoriesByTagTitle/{title}")]
+        // [ProducesResponseType(StatusCodes.Status200OK)]
+        // public async Task<IActionResult> GetStoriesByTagTitle(String title)
+        // {
+        //     List<int> ids =
+        //         await _consulHttpClient.GetAsync<List<int>>("tag_ms", $"/api/tags/GetStoriesIdsByTagTitle/{title}");
+        //
+        //     var result = _repository.getStoryService.GetStoriesByIds(ids);
+        //
+        //     return Ok(result);
+        // }
+        //
+        private async Task<AttachmentDTO> GetAttachmentFromAttachmentMs(int attachmentId)
         {
             try
             {
-                return await _consulHttpClient.GetAsync<List<AttachmentDTO>>(_attachmentsMs, $"api/attachment/GetAttachmentsByStoryId/{storyId}");
+                return await _consulHttpClient.GetAsync<AttachmentDTO>(_attachmentsMs,
+                    $"api/attachment/get/{attachmentId}");
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
-
+        
             return null;
         }
-
+        
+        private async Task<StoryReview> GetReviewFromReviewMs(int storyId)
+        {
+            try
+            {
+                return await _consulHttpClient.GetAsync<StoryReview>(_reviewMs, $"api/review/StoryReview/{storyId}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        
+            return null;
+        }
+        
         private async Task<List<TagWithIdDto>> GetTagsFromTagMs(int storyId)
         {
             try
             {
-               return await _consulHttpClient.GetAsync<List<TagWithIdDto>>("tag_ms", $"api/tags/GetTagsByStoryId/{storyId}");
+                return await _consulHttpClient.GetAsync<List<TagWithIdDto>>("tag_ms",
+                    $"api/tags/GetTagsByStoryId/{storyId}");
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
-
+        
             return null;
         }
-        
     }
 }

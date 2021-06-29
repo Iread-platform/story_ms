@@ -73,6 +73,9 @@ namespace iread_story
             
             // Inject the public repository
             services.AddScoped<IPublicRepository, PublicRepository>();
+            // Inject story service
+            services.AddScoped<StoryService>();
+            
             IMapper mapper = new MapperConfiguration(config=>{
                 config.AddProfile<AutoMapperProfile>();
             }).CreateMapper();

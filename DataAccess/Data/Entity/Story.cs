@@ -22,9 +22,11 @@ namespace iread_story.DataAccess.Data.Entity
         
         public int StoryLevel { get; set; }
         
-        [Required]
         public string Writer { get; set; }
+
+        public int CoverId { get; set; }
         
-        public int Rating { get; set; }
+        public int AudioId { get; set; }
+        
     }
 }

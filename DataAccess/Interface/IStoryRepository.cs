@@ -1,22 +1,23 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using iread_story.DataAccess.Data.Entity;
 
 namespace iread_story.DataAccess.Interface
 {
-    public interface IStory
+    public interface IStoryRepository
     {
-        Story GetStory(int id);
+        Task<Story> GetStory(int id);
 
         void UpdateStory(int id, Story story);
         void AddStory( Story story);
 
-        IEnumerable<Story> GetStories();
+        List<Story> GetStories();
 
         void DeleteStory(int id);
 
         bool Exists(int id);
         
-        IEnumerable<Story> GetStoriesByIds(List<int> ids);
+        List<Story> GetStoriesByIds(List<int> ids);
         
 
     }

@@ -4,7 +4,7 @@ using MySql.EntityFrameworkCore.Metadata;
 
 namespace iread_story.Migrations
 {
-    public partial class Initial_story : Migration
+    public partial class initMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -15,7 +15,12 @@ namespace iread_story.Migrations
                     StoryId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     Title = table.Column<string>(type: "text", nullable: true),
-                    ReleaseDate = table.Column<DateTime>(type: "datetime", nullable: false)
+                    ReleaseDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    StoryLevel = table.Column<int>(type: "int", nullable: false),
+                    Writer = table.Column<string>(type: "text", nullable: true),
+                    CoverId = table.Column<int>(type: "int", nullable: false),
+                    AudioId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

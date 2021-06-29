@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 
-namespace iread_story.DataAccess.Data.Types
+namespace iread_story.Web.DTO
 {
     public class AttachmentsWithStoryId
     {

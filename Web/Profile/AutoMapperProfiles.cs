@@ -9,6 +9,7 @@ namespace iread_story.Web.Profile
         {
             CreateMap<Story, StoryDto>().ReverseMap();
             CreateMap<Story, ViewStoryDto>().ReverseMap();
+            CreateMap<Story, CreateStoryTitleDto>().ReverseMap();
         }
     }
 }

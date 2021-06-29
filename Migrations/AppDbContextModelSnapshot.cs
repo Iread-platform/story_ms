@@ -23,11 +23,14 @@ namespace iread_story.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<int>("AudioId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CoverId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("ReleaseDate")
                         .HasColumnType("datetime");
@@ -39,7 +42,6 @@ namespace iread_story.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Writer")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("StoryId");
