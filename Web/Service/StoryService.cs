@@ -22,11 +22,11 @@ namespace iread_story.Web.Service
              return await _repository.GetStoryService.GetStory(id);
          }
 
-         public bool UpdateStory(int id, Story story)
+         public bool UpdateStory(int id, Story story, Story oldStory)
          {
              try
              {
-                 _repository.GetStoryService.UpdateStory(id, story);
+                 _repository.GetStoryService.UpdateStory(id, story, oldStory);
                  return true;
              }
              catch (DbUpdateConcurrencyException)

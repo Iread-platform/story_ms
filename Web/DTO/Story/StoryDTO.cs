@@ -23,7 +23,9 @@ namespace iread_story.Web.DTO.Story
         
         public List<CreateTagDto> KeyWords { get; set; }
         
-        public List<IFormFile> Attachments { get; set; }
+        public IFormFile StoryCover { get; set; }
+        
+        public IFormFile StoryAudio { get; set; }
         
         public StoryReview StoryReview { get; set; }
         

@@ -100,6 +100,9 @@ namespace iread_story.Web.Controller
             }
 
             Story storyToAdd = _mapper.Map<Story>(storyWithTitle);
+            
+            //TODO Add user id that come from token to story model before add it
+            
             if (!_storyService.AddStory(storyToAdd))
             {
                 return BadRequest();
@@ -164,6 +167,8 @@ namespace iread_story.Web.Controller
                 return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
 
+            //TODO Add Check if the user who updated the story is its owner
+            
             Story story = await _storyService.GetStory(storyWithAudio.StoryId);
             if (story == null)
             {
@@ -190,7 +195,7 @@ namespace iread_story.Web.Controller
             
             //Insert audio id to story
             story.AudioId = attachmentAfterPost.Id;
-            if (!_storyService.UpdateStory(story.StoryId, story))
+            if (!_storyService.UpdateStory(story.StoryId, story, story))
             {
                 return BadRequest();
             }
@@ -198,66 +203,128 @@ namespace iread_story.Web.Controller
             return NoContent();
         }
 
-        // [HttpDelete("delete/{id:int}")]
-        // [ProducesResponseType(StatusCodes.Status200OK)]
-        // [ProducesResponseType(StatusCodes.Status404NotFound)]
-        // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        // public IActionResult DeleteStory(int id)
-        // {
-        //     if (!_repository.getStoryService.Exists(id))
-        //     {
-        //         return NotFound();
-        //     }
-        //
-        //     _repository.getStoryService.DeleteStory(id);
-        //     return _repository.getStoryService.Exists(id) ? StatusCode(500) : Ok();
-        // }
-        //
-        // [HttpPut("update/{id:int}")]
-        // [ProducesResponseType(StatusCodes.Status200OK)]
-        // [ProducesResponseType(StatusCodes.Status404NotFound)]
-        // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        // public async Task<IActionResult> UpdateStory(int id, [FromForm] UpdateStoryDto story)
-        // {
-        //     if (story == null || !ModelState.IsValid)
-        //     {
-        //         return BadRequest(ModelState);
-        //     }
-        //
-        //     story.StoryId = id;
-        //     if (!_repository.getStoryService.Exists(id))
-        //     {
-        //         return NotFound();
-        //     }
-        //
-        //     var storyToUpdate = _mapper.Map<Story>(story);
-        //     _repository.getStoryService.UpdateStory(id, storyToUpdate);
-        //
-        //     if (story.KeyWords != null)
-        //     {
-        //         await _consulHttpClient.PutBodyAsync<TagWithIdDto[]>("tag_ms", "/api/tags/update",
-        //             new TagsWithStoryId
-        //             {
-        //                 tagsDtos = story.KeyWords.ToList(), storyId = id
-        //             });
-        //     }
-        //
-        //     return NoContent();
-        // }
-        //
-        // [HttpGet()]
-        // [Route("GetStoriesByTagTitle/{title}")]
-        // [ProducesResponseType(StatusCodes.Status200OK)]
-        // public async Task<IActionResult> GetStoriesByTagTitle(String title)
-        // {
-        //     List<int> ids =
-        //         await _consulHttpClient.GetAsync<List<int>>("tag_ms", $"/api/tags/GetStoriesIdsByTagTitle/{title}");
-        //
-        //     var result = _repository.getStoryService.GetStoriesByIds(ids);
-        //
-        //     return Ok(result);
-        // }
-        //
+        [HttpPut("addCover")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> AddStoryCover([FromForm] CreateStoryCoverDto storyWithCover)
+        {
+            if (storyWithCover == null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
+            
+            //TODO Add Check if the user who updated the story is its owner
+
+            Story story = await _storyService.GetStory(storyWithCover.StoryId);
+            if (story == null)
+            {
+                return NotFound();
+            }
+            
+            //Insert attachment before update story
+            var parameters = new Dictionary<string, string>() { {"StoryId",story.StoryId.ToString()} };
+
+            List<IFormFile> attachments = new List<IFormFile>();
+            attachments.Add(storyWithCover.StoryCover);
+
+            AttachmentsWithStoryId attachmentAfterPost = new AttachmentsWithStoryId();
+            try
+            {
+                attachmentAfterPost = await _consulHttpClient.PostFormAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment/add",
+                    parameters, attachments?.ToList());
+            }
+            catch (Exception e)
+            {
+                ModelState.AddModelError("Cover", e.Message);
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
+            
+            //Insert cover id to story
+            story.CoverId = attachmentAfterPost.Id;
+            if (!_storyService.UpdateStory(story.StoryId, story,story))
+            {
+                return BadRequest();
+            }
+
+            return NoContent();
+        }
+        
+        
+        [HttpDelete("delete/{id:int}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult DeleteStory(int id)
+        {
+            if (!_storyService.Exists(id))
+            {
+                return NotFound();
+            }
+            
+            //TODO Add Check if the user who deleted the story is its owner
+
+            if (!_storyService.DeleteStory(id))
+            {
+                return BadRequest();
+            }
+            return NoContent();
+        }
+        
+        [HttpPut("update")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateStory([FromForm] UpdateStoryDto story)
+        {
+            if (story == null || !ModelState.IsValid)
+            {
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
+
+            Story oldStory = await _storyService.GetStory(story.StoryId);
+            if (oldStory == null)
+            {
+                return NotFound();
+            }
+        
+            Story storyEntity = _mapper.Map<Story>(story);
+            
+            if (!_storyService.UpdateStory(storyEntity.StoryId, storyEntity, oldStory))
+            {
+                return BadRequest();
+            }
+        
+            if (story.KeyWords != null)
+            {
+                await _consulHttpClient.PutBodyAsync<TagWithIdDto[]>("tag_ms", "/api/tags/update",
+                    new TagsWithStoryId
+                    {
+                        tagsDtos = story.KeyWords.ToList(), storyId = story.StoryId
+                    });
+            }
+        
+            return NoContent();
+        }
+        
+        [HttpGet()]
+        [Route("GetStoriesByTagTitle/{title}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetStoriesByTagTitle(String title)
+        {
+            List<int> ids =
+                await _consulHttpClient.GetAsync<List<int>>("tag_ms", $"/api/tags/GetStoriesIdsByTagTitle/{title}");
+        
+            var result = _storyService.GetStoriesByIds(ids);
+        
+            return Ok(result);
+        }
+        
         private async Task<AttachmentDTO> GetAttachmentFromAttachmentMs(int attachmentId)
         {
             try

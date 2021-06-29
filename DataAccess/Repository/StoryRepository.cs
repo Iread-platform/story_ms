@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using iread_story.DataAccess.Data;
 using iread_story.DataAccess.Data.Entity;
 using iread_story.DataAccess.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace iread_story.DataAccess.Repository
 {
@@ -21,9 +22,12 @@ namespace iread_story.DataAccess.Repository
             return await _context.Stories.FindAsync(id);
         }
 
-        public void UpdateStory(int id, Story story)
+        public void UpdateStory(int id, Story story, Story oldStory)
         {
-            story.StoryId = id;
+            
+            _context.Entry(oldStory).State = EntityState.Detached;
+            _context.SaveChanges();
+            
             _context.Stories.Attach(story);
             _context.Update(story);
             _context.SaveChanges();

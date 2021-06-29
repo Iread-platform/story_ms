@@ -13,6 +13,7 @@ namespace iread_story.Web.Util
         public const String INVALID_STORY_ID_VALUE = "Invalid story id value.";
         public const String FILE_EXTENSION_NOT_ALLOWED = "File extension is not allowed!.";
         public const String AUDIO_FILE_EXTENSION_NOT_ALLOWED = "Audio file extension is not allowed, Must be MP3!.";
+        public const String COVER_FILE_EXTENSION_NOT_ALLOWED = "Cover file extension is not allowed, Must be png or jpg!.";
 
         public static List<String> ModelStateParser(ModelStateDictionary modelStateDictionary)
         {
