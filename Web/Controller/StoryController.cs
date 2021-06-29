@@ -64,19 +64,25 @@ namespace iread_story.Web.Controller
             
             return Ok(viewStories);
         }
-        //
-        // [HttpGet("get/{id:int}", Name = "GetStory")]
-        // [ProducesResponseType(StatusCodes.Status200OK)]
-        // [ProducesResponseType(StatusCodes.Status404NotFound)]
-        // public async Task<IActionResult> GetStory(int id)
-        // {
-        //     Story story = _repository.getStoryService.GetStory(id);
-        //     ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
-        //     viewStory.Attachments = await GetAttachmentFromAttachmentMs(id);
-        //     viewStory.KeyWords = await GetTagsFromTagMs(id);
-        //     return viewStory == null ? NotFound() : Ok(viewStory);
-        // }
-        //
+        
+        [HttpGet("get/{id:int}", Name = "GetStory")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetStory(int id)
+        {
+            Story story = await _storyService.GetStory(id);
+            if (story == null)
+            {
+                return NotFound();
+            }
+            ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
+            viewStory.StoryAudio = await GetAttachmentFromAttachmentMs(story.AudioId);
+            viewStory.StoryCover = await GetAttachmentFromAttachmentMs(story.CoverId);
+            viewStory.Rating = await GetReviewFromReviewMs(story.StoryId);
+            viewStory.KeyWords = await GetTagsFromTagMs(story.StoryId);
+            return Ok(viewStory);
+        }
+        
         // [HttpPost("add")]
         // [ProducesResponseType(StatusCodes.Status201Created)]
         // [ProducesResponseType(StatusCodes.Status400BadRequest)]
