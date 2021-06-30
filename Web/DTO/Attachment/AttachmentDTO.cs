@@ -4,6 +4,7 @@ namespace iread_story.Web.DTO
 {
     public class AttachmentDTO
     {
+        public int Id { get; set; }
         public string Name { get; set; }
         public string DownloadUrl { get; set; }
         public string Type { get; set; }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using iread_story.Web.DTO.Review;
 using iread_story.Web.DTO.Tag;
 using Microsoft.AspNetCore.Http;
 
@@ -8,6 +9,8 @@ namespace iread_story.Web.DTO.Story
     public class StoryDto
     {
 
+        public int StoryId { get; set; }
+        
         public string Title { get; set; }
 
         public DateTime ReleaseDate { get; set; }
@@ -20,8 +23,11 @@ namespace iread_story.Web.DTO.Story
         
         public List<CreateTagDto> KeyWords { get; set; }
         
-        public List<IFormFile> Attachments { get; set; }
+        public IFormFile StoryCover { get; set; }
         
-        public float Rating { get; set; }
+        public IFormFile StoryAudio { get; set; }
+        
+        public StoryReview StoryReview { get; set; }
+        
     }
 }

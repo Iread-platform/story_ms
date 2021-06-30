@@ -8,10 +8,16 @@ namespace iread_story.Web.Profile
     {
         public AutoMapperProfile()
         {
+            //Story Mapper
             CreateMap<Story, StoryDto>().ReverseMap();
             CreateMap<Story, ViewStoryDto>().ReverseMap();
-            
-            //pages
+            CreateMap<Story, CreateStoryTitleDto>().ReverseMap();
+            CreateMap<Story, CreateStoryCoverDto>().ReverseMap();
+            CreateMap<Story, CreateStoryAudioDto>().ReverseMap();
+            CreateMap<Story, CreateStoryTagsDto>().ReverseMap();
+            CreateMap<Story, UpdateStoryDto>().ReverseMap();
+
+            //Page Mapper
             CreateMap<Page, PageDto>().ReverseMap();
             CreateMap<Page, PageCreateDto>().ReverseMap();
             CreateMap<Page, PageUpdateDto>().ReverseMap();

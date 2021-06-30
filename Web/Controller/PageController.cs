@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using iread_story.DataAccess.Data.Entity;
-using iread_story.DataAccess.Service;
+using iread_story.Web.Service;
 using iread_story.Web.DTO.Page;
 using iread_story.Web.Util;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace iread_story.Web.Controller
 {
-    [Route("/api/[controller]")]
+    [Route("/api/Story/[controller]")]
     public class PageController:ControllerBase
     {
         private readonly PageService _pageService;
@@ -51,6 +51,21 @@ namespace iread_story.Web.Controller
 
             List<Page> storyPages = await _pageService.GetPagesByStory(id);
             return Ok(_mapper.Map<List<PageWithoutStoryDto>>(storyPages));
+        }
+        
+        [HttpGet("getContent/{id}")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetContent([FromRoute]int id)
+        {
+            Page page = await _pageService.GetPageById(id);
+
+            if (page == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(page.Content);
         }
         
         //POST: api/page/add

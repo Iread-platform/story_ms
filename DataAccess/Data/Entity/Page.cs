@@ -17,7 +17,6 @@ namespace iread_story.DataAccess.Data.Entity
         public int StoryId { get; set; }
         public Story Story { get; set; }
         
-        [Required(ErrorMessage = ErrorMessages.PAGE_CONTENT_REQUIRED)]
         public string Content { get; set; }
     }
 }

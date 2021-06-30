@@ -4,7 +4,7 @@ using iread_story.DataAccess.Interface;
 using iread_story.DataAccess.Data.Entity;
 using Microsoft.EntityFrameworkCore;
 
-namespace iread_story.DataAccess.Service
+namespace iread_story.Web.Service
 {
     public class PageService
     {
@@ -67,7 +67,7 @@ namespace iread_story.DataAccess.Service
 
         public bool IsStoryExists(int storyId)
         {
-            return _repository.GetPageRepository.IsStoryExists(storyId);
+            return _repository.GetStoryService.Exists(storyId);
         }
 
         public bool IsExists(int id)

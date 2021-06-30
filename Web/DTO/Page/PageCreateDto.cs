@@ -9,7 +9,6 @@ namespace iread_story.Web.DTO.Page
         [Range(1, int.MaxValue, ErrorMessage = ErrorMessages.INVALID_STORY_ID_VALUE)]
         public int StoryId { get; set; }
         
-        [Required(ErrorMessage = ErrorMessages.PAGE_CONTENT_REQUIRED)]
         public string Content { get; set; }
     }
 }
