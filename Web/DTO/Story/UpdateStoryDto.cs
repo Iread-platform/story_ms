@@ -18,6 +18,6 @@ namespace iread_story.Web.DTO.Story
         
         public string Writer { get; set; }
         
-        public List<CreateTagDto> KeyWords { get; set; }
+        // public List<CreateTagDto> KeyWords { get; set; }
     }
 }
