@@ -15,5 +15,8 @@ namespace iread_story.Web.DTO.Story
         [Range(1,int.MaxValue,ErrorMessage = ErrorMessages.INVALID_STORY_ID_VALUE)]
         public int StoryId { get; set; }
         
+        [Required(ErrorMessage = ErrorMessages.COLOR_REQUIRED)]
+        public string Color { get; set; }
+        
     }
 }

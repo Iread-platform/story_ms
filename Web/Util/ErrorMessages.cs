@@ -17,6 +17,7 @@ namespace iread_story.Web.Util
         public const String PAGE_ID_REQUIRED = "Page id is required.";
         public const String PAGE_CONTENT_REQUIRED = "Page content is required.";
         public const String INVALID_PAGE_ID_VALUE = "Invalid page id value";
+        public const String COLOR_REQUIRED = "Color is required.";
         
 
         public static List<String> ModelStateParser(ModelStateDictionary modelStateDictionary)
