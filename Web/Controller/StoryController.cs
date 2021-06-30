@@ -136,8 +136,7 @@ namespace iread_story.Web.Controller
             }
             
             //update old attachment if story has previous audio OR insert new attachment
-            var parameters = new Dictionary<string, string>() { {"StoryId",story.StoryId.ToString()} };
-
+            
             List<IFormFile> attachments = new List<IFormFile>();
             attachments.Add(storyWithAudio.StoryAudio);
             
@@ -146,9 +145,10 @@ namespace iread_story.Web.Controller
             //update old attachment if story has previous audio
             if (story.AudioId != 0)
             {
+                var parameters = new Dictionary<string, string>() { {"Id",story.AudioId.ToString()} };
                 try
                 {
-                    await _consulHttpClient.PutFormAsync<AttachmentsWithStoryId>(_attachmentsMs, $"api/Attachment/update/{story.AudioId}",
+                    await _consulHttpClient.PutFormAsync<AttachmentsWithStoryId>(_attachmentsMs, $"api/Attachment/update",
                         parameters, attachments?.ToList());
                 }
                 catch (Exception e)
@@ -160,6 +160,7 @@ namespace iread_story.Web.Controller
             else
             {
                 //Insert attachment before update story
+                var parameters = new Dictionary<string, string>() { {"StoryId",story.StoryId.ToString()} };
                 try
                 {
                     currentAttachment = await _consulHttpClient.PostFormAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment/add",

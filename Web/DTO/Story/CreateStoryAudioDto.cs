@@ -8,7 +8,7 @@ namespace iread_story.Web.DTO.Story
     {
         [Required]
         [DataType(DataType.Upload)]
-        [AllowedExtensions(new string[] { ".MP3"},ErrorMessage = ErrorMessages.AUDIO_FILE_EXTENSION_NOT_ALLOWED)]
+        // [AllowedExtensions(new string[] { ".MP3"},ErrorMessage = ErrorMessages.AUDIO_FILE_EXTENSION_NOT_ALLOWED)]
         public IFormFile StoryAudio { get; set; }
         
         [Required(ErrorMessage = ErrorMessages.STORY_ID_REQUIRED)]
