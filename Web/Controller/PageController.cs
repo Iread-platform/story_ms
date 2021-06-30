@@ -53,6 +53,21 @@ namespace iread_story.Web.Controller
             return Ok(_mapper.Map<List<PageWithoutStoryDto>>(storyPages));
         }
         
+        [HttpGet("getContent/{id}")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetContent([FromRoute]int id)
+        {
+            Page page = await _pageService.GetPageById(id);
+
+            if (page == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(page.Content);
+        }
+        
         //POST: api/page/add
         [HttpPost("add")]
         [ProducesResponseType(StatusCodes.Status201Created)]
