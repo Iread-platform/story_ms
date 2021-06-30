@@ -40,6 +40,14 @@ namespace iread_story
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: "_myAllowSpecificOrigins",builder => 
+                    builder
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+            });
 
             // for routing
             services.AddControllers();
@@ -102,7 +110,7 @@ namespace iread_story
             //app.UseHttpsRedirection();
 
             app.UseRouting();
-
+            app.UseCors("_myAllowSpecificOrigins");
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

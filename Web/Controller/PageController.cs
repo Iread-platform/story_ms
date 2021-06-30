@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace iread_story.Web.Controller
 {
-    [Route("/api/[controller]")]
+    [Route("/api/Story/[controller]")]
     public class PageController:ControllerBase
     {
         private readonly PageService _pageService;
