@@ -14,6 +14,7 @@ namespace iread_story.Web.Profile
             CreateMap<Story, CreateStoryTitleDto>().ReverseMap();
             CreateMap<Story, CreateStoryCoverDto>().ReverseMap();
             CreateMap<Story, CreateStoryAudioDto>().ReverseMap();
+            CreateMap<Story, CreateStoryTagsDto>().ReverseMap();
             CreateMap<Story, UpdateStoryDto>().ReverseMap();
 
             //Page Mapper

@@ -274,6 +274,49 @@ namespace iread_story.Web.Controller
         
         //TODO Add api for post and update story tags
         
+        [HttpPut("addTags")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> AddStoryTags([FromBody] CreateStoryTagsDto storyWithTags)
+        {
+            if (storyWithTags == null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
+            
+            Story story = await _storyService.GetStory(storyWithTags.StoryId);
+            if (story == null)
+            {
+                return NotFound();
+            }
+            
+            if (storyWithTags.KeyWords != null)
+            {
+                TagsWithStoryId tagsWithStoryId = new TagsWithStoryId()
+                {
+                    storyId = storyWithTags.StoryId,
+                    tagsDtos = storyWithTags.KeyWords.ToList()
+                };
+                try
+                {
+                    await _consulHttpClient.PostBodyAsync<TagWithIdDto[]>("tag_ms", "/api/tags/add", tagsWithStoryId);
+                }
+                catch (Exception e)
+                {
+                    ModelState.AddModelError("Tag", e.Message);
+                    return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+                }
+            }
+            return NoContent();
+        }
+        
+        
         [HttpPut("update")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -297,25 +340,6 @@ namespace iread_story.Web.Controller
             oldStory.ReleaseDate = story.ReleaseDate;
             oldStory.StoryLevel = story.StoryLevel;
             
-            
-            // if (story.KeyWords != null)
-            // {
-            //     TagsWithStoryId tagsWithStoryId = new TagsWithStoryId()
-            //     {
-            //         storyId = storyEntity.StoryId,
-            //         tagsDtos = story.KeyWords.ToList()
-            //     };
-            //     try
-            //     {
-            //         await _consulHttpClient.PostBodyAsync<TagWithIdDto[]>("tag_ms", "/api/tags/add", tagsWithStoryId);
-            //     }
-            //     catch (Exception e)
-            //     {
-            //         ModelState.AddModelError("Tag", e.Message);
-            //         return BadRequest(ErrorMessages.ModelStateParser(ModelState));
-            //     }
-            // }
-
             if (!_storyService.UpdateStory(story.StoryId, oldStory))
             {
                 return BadRequest();
