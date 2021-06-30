@@ -126,8 +126,6 @@ namespace iread_story.Web.Controller
             {
                 return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
-
-            //TODO Add Check if the user who updated the story is its owner
             
             Story story = await _storyService.GetStory(storyWithAudio.StoryId);
             if (story == null)
@@ -199,39 +197,57 @@ namespace iread_story.Web.Controller
                 return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
             
-            //TODO Add Check if the user who updated the story is its owner
-
             Story story = await _storyService.GetStory(storyWithCover.StoryId);
             if (story == null)
             {
                 return NotFound();
             }
             
-            //Insert attachment before update story
-            var parameters = new Dictionary<string, string>() { {"StoryId",story.StoryId.ToString()} };
-
+            //update old attachment if story has previous cover OR insert new attachment
+            
             List<IFormFile> attachments = new List<IFormFile>();
             attachments.Add(storyWithCover.StoryCover);
-
-            AttachmentsWithStoryId attachmentAfterPost = new AttachmentsWithStoryId();
-            try
+            
+            AttachmentsWithStoryId currentAttachment;
+            
+            //update old attachment if story has previous cover
+            if (story.CoverId != 0)
             {
-                attachmentAfterPost = await _consulHttpClient.PostFormAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment/add",
-                    parameters, attachments?.ToList());
+                var parameters = new Dictionary<string, string>() { {"Id",story.CoverId.ToString()} };
+                try
+                {
+                    await _consulHttpClient.PutFormAsync<AttachmentsWithStoryId>(_attachmentsMs, $"api/Attachment/update",
+                        parameters, attachments?.ToList());
+                }
+                catch (Exception e)
+                {
+                    ModelState.AddModelError("Cover", e.Message);
+                    return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+                }
             }
-            catch (Exception e)
+            else
             {
-                ModelState.AddModelError("Cover", e.Message);
-                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+                //Insert attachment before update story
+                var parameters = new Dictionary<string, string>() { {"StoryId",story.StoryId.ToString()} };
+                try
+                {
+                    currentAttachment = await _consulHttpClient.PostFormAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment/add",
+                        parameters, attachments?.ToList());
+                }
+                catch (Exception e)
+                {
+                    ModelState.AddModelError("Cover", e.Message);
+                    return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+                }
+                
+                //Insert cover id to story
+                story.CoverId = currentAttachment.Id;
+                if (!_storyService.UpdateStory(story.StoryId, story, story))
+                {
+                    return BadRequest();
+                }
             }
             
-            //Insert cover id to story
-            story.CoverId = attachmentAfterPost.Id;
-            if (!_storyService.UpdateStory(story.StoryId, story,story))
-            {
-                return BadRequest();
-            }
-
             return NoContent();
         }
         
