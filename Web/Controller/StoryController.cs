@@ -172,7 +172,7 @@ namespace iread_story.Web.Controller
                 
                 //Insert audio id to story
                 story.AudioId = currentAttachment.Id;
-                if (!_storyService.UpdateStory(story.StoryId, story, story))
+                if (!_storyService.UpdateStory(story.StoryId, story))
                 {
                     return BadRequest();
                 }
@@ -242,7 +242,7 @@ namespace iread_story.Web.Controller
                 
                 //Insert cover id to story
                 story.CoverId = currentAttachment.Id;
-                if (!_storyService.UpdateStory(story.StoryId, story, story))
+                if (!_storyService.UpdateStory(story.StoryId, story))
                 {
                     return BadRequest();
                 }
@@ -290,8 +290,12 @@ namespace iread_story.Web.Controller
             {
                 return NotFound();
             }
-        
-            Story storyEntity = _mapper.Map<Story>(story);
+
+            oldStory.Description = story.Description;
+            oldStory.Title = story.Title;
+            oldStory.Writer = story.Writer;
+            oldStory.ReleaseDate = story.ReleaseDate;
+            oldStory.StoryLevel = story.StoryLevel;
             
             
             // if (story.KeyWords != null)
@@ -312,7 +316,7 @@ namespace iread_story.Web.Controller
             //     }
             // }
 
-            if (!_storyService.UpdateStory(storyEntity.StoryId, storyEntity, oldStory))
+            if (!_storyService.UpdateStory(story.StoryId, oldStory))
             {
                 return BadRequest();
             }

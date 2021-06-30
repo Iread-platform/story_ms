@@ -22,14 +22,17 @@ namespace iread_story.DataAccess.Repository
             return await _context.Stories.FindAsync(id);
         }
 
-        public void UpdateStory(int id, Story story, Story oldStory)
+        public void UpdateStory(int id, Story story)
         {
             //TODO resolve this bug when update story the cover id and audio id it assign to zero
-            _context.Entry(oldStory).State = EntityState.Detached;
-            _context.SaveChanges();
-            
-            _context.Stories.Attach(story);
-            _context.Update(story);
+            // _context.Entry(oldStory).State = EntityState.Detached;
+            // _context.SaveChanges();
+            //
+            // _context.Stories.Attach(story);
+            // _context.Update(story);
+            // _context.SaveChanges();
+            _context.Attach(story);
+            _context.Stories.Update(story);
             _context.SaveChanges();
         }
 
