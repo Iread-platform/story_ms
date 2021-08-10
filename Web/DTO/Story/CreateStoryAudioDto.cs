@@ -8,11 +8,12 @@ namespace iread_story.Web.DTO.Story
     {
         [Required]
         [DataType(DataType.Upload)]
-        [AllowedExtensions(new string[] { ".MP3"},ErrorMessage = ErrorMessages.AUDIO_FILE_EXTENSION_NOT_ALLOWED)]
+        [AllowedExtensions(new string[] { ".mp4",".aac",".wma",".wav",".m4a",".flac",".mp3",
+            ".MP4",".AAC",".WMA",".WAV",".M4A",".FLAC",".MP3"}, ErrorMessage = ErrorMessages.AUDIO_FILE_EXTENSION_NOT_ALLOWED)]
         public IFormFile StoryAudio { get; set; }
-        
+
         [Required(ErrorMessage = ErrorMessages.STORY_ID_REQUIRED)]
-        [Range(1,int.MaxValue,ErrorMessage = ErrorMessages.INVALID_STORY_ID_VALUE)]
+        [Range(1, int.MaxValue, ErrorMessage = ErrorMessages.INVALID_STORY_ID_VALUE)]
         public int StoryId { get; set; }
     }
 }
