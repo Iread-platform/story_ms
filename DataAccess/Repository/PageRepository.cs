@@ -34,12 +34,10 @@ namespace iread_story.DataAccess.Repository
             _context.SaveChangesAsync();
         }
 
-        public void Delete(int id)
+        public void Delete(Page page)
         {
-            var pageToRemove = new Page() { PageId = id };
-            _context.Pages.Attach(pageToRemove);
-            _context.Pages.Remove(pageToRemove);
-            _context.SaveChangesAsync();
+            _context.Pages.Remove(page);
+            _context.SaveChanges();
         }
 
         public void Update(int id, Page page, Page oldPage)
@@ -62,14 +60,14 @@ namespace iread_story.DataAccess.Repository
             return await _context.Pages.Where(p => p.StoryId == storyId).CountAsync();
         }
 
-        public void IncreasePagesNumbersFrom(int storyId, int Index)
+        public void IncreasePagesNumbersFrom(int storyId, int index)
         {
-            _context.Pages.Where(p => p.StoryId == storyId && p.No >= Index).Update(p => new Page { No = p.No + 1 });
+            _context.Database.ExecuteSqlRaw($"UPDATE Pages  SET  No = No + 1 WHERE StoryId = {storyId} AND No >= {index}");
         }
 
-        public void DecreasePagesNumbersFrom(int storyId, int Index)
+        public void DecreasePagesNumbersFrom(int storyId, int index)
         {
-            _context.Pages.Where(p => p.StoryId == storyId && p.No >= Index).Update(p => new Page { No = p.No - 1 });
+            _context.Database.ExecuteSqlRaw($"UPDATE Pages  SET  No = No - 1 WHERE StoryId = {storyId} AND No >= {index}");
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using iread_story.DataAccess.Interface;
 using iread_story.DataAccess.Data.Entity;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace iread_story.Web.Service
 {
@@ -48,18 +49,10 @@ namespace iread_story.Web.Service
             }
         }
 
-        public bool Delete(int id)
+        public void Delete(Page page)
         {
-            try
-            {
-                _repository.GetPageRepository.Delete(id);
-                return true;
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return false;
-            }
-
+            _repository.GetPageRepository.DecreasePagesNumbersFrom(page.StoryId, page.No + 1);
+            _repository.GetPageRepository.Delete(page);
         }
 
         public async Task<List<Page>> GetPagesByStory(int storyId)
@@ -80,6 +73,13 @@ namespace iread_story.Web.Service
         public async Task<int> GetPagesCount(int storyId)
         {
             return await _repository.GetPageRepository.GetPagesCount(storyId);
+        }
+
+        public void InsertPageIn(Page page, int index)
+        {
+            page.No = index;
+            _repository.GetPageRepository.IncreasePagesNumbersFrom(page.StoryId, index);
+            _repository.GetPageRepository.Insert(page);
         }
     }
 }

@@ -95,6 +95,33 @@ namespace iread_story.Web.Controller
             return CreatedAtAction("GetPage", new { id = pageEntity.PageId }, _mapper.Map<PageDto>(pageEntity));
         }
 
+        //POST: api/page/add
+        [HttpPost("addIn/{index}")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult PostPage([FromBody] PageCreateDto pageCreateDto, [FromRoute] int index)
+        {
+            if (pageCreateDto == null)
+            {
+                return BadRequest();
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
+
+            if (!_pageService.IsStoryExists(pageCreateDto.StoryId))
+            {
+                ModelState.AddModelError("page", ErrorMessages.INVALID_STORY_ID_VALUE);
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
+
+            Page pageEntity = _mapper.Map<Page>(pageCreateDto);
+
+            _pageService.InsertPageIn(pageEntity, index);
+            return CreatedAtAction("GetPage", new { id = pageEntity.PageId }, _mapper.Map<PageDto>(pageEntity));
+        }
+
         // PUT: api/page/update
         [HttpPut("update")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -137,16 +164,14 @@ namespace iread_story.Web.Controller
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult DeletePage([FromRoute] int id)
         {
-
-            if (!_pageService.IsExists(id))
+            var page = _pageService.GetPageById(id).Result;
+            if (page == null)
             {
                 return NotFound();
             }
 
-            if (!_pageService.Delete(id))
-            {
-                return BadRequest();
-            }
+            _pageService.Delete(page);
+
             return NoContent();
         }
     }

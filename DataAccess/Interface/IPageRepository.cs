@@ -12,7 +12,7 @@ namespace iread_story.DataAccess.Interface
 
         public void Insert(Page page);
 
-        public void Delete(int id);
+        public void Delete(Page page);
 
         public void Update(int id, Page page, Page oldPage);
 
