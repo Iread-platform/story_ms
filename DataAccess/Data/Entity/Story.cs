@@ -17,17 +17,17 @@ namespace iread_story.DataAccess.Data.Entity
         public string Title { get; set; }
 
         public DateTime ReleaseDate { get; set; }
-          
+
         public string Description { get; set; }
-        
+
         public int StoryLevel { get; set; }
-        
+
         public string Writer { get; set; }
 
         public int CoverId { get; set; }
-        
+
         public int AudioId { get; set; }
-        
+
         public string Color { get; set; }
 
         public List<Page> Pages { get; set; }

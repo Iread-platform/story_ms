@@ -4,7 +4,7 @@ using iread_story.Web.DTO.Story;
 
 namespace iread_story.Web.Profile
 {
-    public class AutoMapperProfile:AutoMapper.Profile
+    public class AutoMapperProfile : AutoMapper.Profile
     {
         public AutoMapperProfile()
         {
@@ -22,7 +22,7 @@ namespace iread_story.Web.Profile
             CreateMap<Page, PageCreateDto>().ReverseMap();
             CreateMap<Page, PageUpdateDto>().ReverseMap();
             CreateMap<Page, PageWithoutStoryDto>().ReverseMap();
-            
+
         }
     }
 }

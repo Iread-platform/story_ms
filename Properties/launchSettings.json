@@ -1,12 +1,9 @@
 ﻿{
-  
-  "Release" : "1",
-  
+  "Release": "1",
   "ConsulConfig": {
     "Host": "http://localhost:8500",
     "ServiceName": "story_ms"
   },
-
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "iisSettings": {
     "windowsAuthentication": false,
@@ -16,11 +13,9 @@
       "sslPort": 44336
     }
   },
-
   "ConnectionStrings": {
     "DefaultConnection": "Server=localhost;Database=story_ms_db;Uid=codavia;Pwd=cod@v!@; convert zero datetime=True"
   },
-
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
@@ -35,7 +30,7 @@
       "dotnetRunMessages": "true",
       "launchBrowser": true,
       "launchUrl": "swagger",
-      "applicationUrl": "http://localhost:5010",
+      "applicationUrl": "http://192.168.1.118:5010",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

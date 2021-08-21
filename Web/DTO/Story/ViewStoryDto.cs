@@ -9,19 +9,19 @@ namespace iread_story.Web.DTO.Story
     public class ViewStoryDto
     {
         public int StoryId { get; set; }
-        
+
         public string Title { get; set; }
 
         public DateTime ReleaseDate { get; set; }
-          
+
         public string Description { get; set; }
-        
+
         public int StoryLevel { get; set; }
-        
+
         public string Writer { get; set; }
-        
+
         public List<TagWithIdDto> KeyWords { get; set; }
-        
+
         public AttachmentDTO StoryCover { get; set; }
         public AttachmentDTO StoryAudio { get; set; }
 

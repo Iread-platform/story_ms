@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace iread_story.DataAccess.Repository
 {
-    public class StoryRepository:IStoryRepository
+    public class StoryRepository : IStoryRepository
     {
         private readonly AppDbContext _context;
 
@@ -19,7 +19,7 @@ namespace iread_story.DataAccess.Repository
 
         public async Task<Story> GetStory(int id)
         {
-            return await _context.Stories.FindAsync(id);
+            return await _context.Stories.Include(s => s.Pages).Where(s => s.StoryId == id).FirstAsync();
         }
 
         public void UpdateStory(int id, Story story)
@@ -29,13 +29,13 @@ namespace iread_story.DataAccess.Repository
             _context.SaveChanges();
         }
 
-        public  void  AddStory(Story story)  
+        public void AddStory(Story story)
         {
             _context.Stories.Add(story);
-             _context.SaveChangesAsync();
+            _context.SaveChangesAsync();
         }
 
-        public List<Story>  GetStories()
+        public List<Story> GetStories()
         {
             return _context.Stories.ToList();
         }

@@ -14,25 +14,27 @@ namespace iread_story.Web.Service
         {
             _repository = repository;
         }
-        
-        public bool InsertPage(Page page)
+
+        public void InsertPage(Page page)
         {
-            try
-            {
-                _repository.GetPageRepository.Insert(page);
-                return true;
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return false;
-            }
+            page.No = 1 + _repository.GetPageRepository.GetPagesCount(page.StoryId).Result;
+            _repository.GetPageRepository.Insert(page);
         }
-        
+
         public async Task<Page> GetPageById(int id)
         {
             return await _repository.GetPageRepository.GetById(id);
         }
-        
+
+        public void IncreasePagesNumbersFrom(int storyId, int index)
+        {
+            _repository.GetPageRepository.IncreasePagesNumbersFrom(storyId, index);
+        }
+        public void DecreasePagesNumbersFrom(int storyId, int index)
+        {
+            _repository.GetPageRepository.DecreasePagesNumbersFrom(storyId, index);
+        }
+
         public bool UpdatePage(Page page, Page oldPage)
         {
             try
@@ -45,7 +47,7 @@ namespace iread_story.Web.Service
                 return false;
             }
         }
-        
+
         public bool Delete(int id)
         {
             try
@@ -57,9 +59,9 @@ namespace iread_story.Web.Service
             {
                 return false;
             }
-            
+
         }
-        
+
         public async Task<List<Page>> GetPagesByStory(int storyId)
         {
             return await _repository.GetPageRepository.GetByStory(storyId);
@@ -73,6 +75,11 @@ namespace iread_story.Web.Service
         public bool IsExists(int id)
         {
             return _repository.GetPageRepository.IsExists(id);
+        }
+
+        public async Task<int> GetPagesCount(int storyId)
+        {
+            return await _repository.GetPageRepository.GetPagesCount(storyId);
         }
     }
 }

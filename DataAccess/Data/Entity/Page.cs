@@ -16,7 +16,9 @@ namespace iread_story.DataAccess.Data.Entity
         [Range(1, int.MaxValue, ErrorMessage = ErrorMessages.INVALID_STORY_ID_VALUE)]
         public int StoryId { get; set; }
         public Story Story { get; set; }
-        
+
         public string Content { get; set; }
+        public string Words { get; set; }
+        public int No { get; set; }
     }
 }

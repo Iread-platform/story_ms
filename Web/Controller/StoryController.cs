@@ -8,6 +8,7 @@ using Consul;
 using iread_story.DataAccess.Data.Entity;
 using iread_story.DataAccess.Interface;
 using iread_story.Web.DTO;
+using iread_story.Web.DTO.Page;
 using iread_story.Web.DTO.Review;
 using iread_story.Web.DTO.Story;
 using iread_story.Web.DTO.Tag;
@@ -84,6 +85,25 @@ namespace iread_story.Web.Controller
             return Ok(viewStory);
         }
 
+        [HttpGet("getStoryToListen/{id:int}", Name = "GetStoryToListen")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> getStoryToListen(int id)
+        {
+            Story story = await _storyService.GetStory(id);
+            if (story == null)
+            {
+                return NotFound();
+            }
+
+            ListenStoryDto viewStory = new ListenStoryDto();
+            viewStory.Audio = await GetAttachmentFromAttachmentMs(story.AudioId);
+            viewStory.Pages = _mapper.Map<List<PageWithoutStoryDto>>(story.Pages);
+            viewStory.PagesCount = viewStory.Pages.Count;
+
+            return Ok(viewStory);
+        }
+
         [HttpPost("add")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -100,15 +120,15 @@ namespace iread_story.Web.Controller
             }
 
             Story storyToAdd = _mapper.Map<Story>(storyWithTitle);
-            
+
             //TODO Add user id that come from token to story model before add it
-            
+
             if (!_storyService.AddStory(storyToAdd))
             {
                 return BadRequest();
             }
 
-            return CreatedAtRoute("GetStory", new {Id = storyToAdd.StoryId}, storyToAdd);
+            return CreatedAtRoute("GetStory", new { Id = storyToAdd.StoryId }, storyToAdd);
         }
 
         [HttpPut("addAudio")]
@@ -126,24 +146,24 @@ namespace iread_story.Web.Controller
             {
                 return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
-            
+
             Story story = await _storyService.GetStory(storyWithAudio.StoryId);
             if (story == null)
             {
                 return NotFound();
             }
-            
+
             //update old attachment if story has previous audio OR insert new attachment
-            
+
             List<IFormFile> attachments = new List<IFormFile>();
             attachments.Add(storyWithAudio.StoryAudio);
-            
+
             AttachmentsWithStoryId currentAttachment;
-            
+
             //update old attachment if story has previous audio
             if (story.AudioId != 0)
             {
-                var parameters = new Dictionary<string, string>() { {"Id",story.AudioId.ToString()} };
+                var parameters = new Dictionary<string, string>() { { "Id", story.AudioId.ToString() } };
                 try
                 {
                     await _consulHttpClient.PutFormAsync<AttachmentsWithStoryId>(_attachmentsMs, $"api/Attachment/update",
@@ -158,18 +178,18 @@ namespace iread_story.Web.Controller
             else
             {
                 //Insert attachment before update story
-                var parameters = new Dictionary<string, string>() { {"StoryId",story.StoryId.ToString()} };
+                var parameters = new Dictionary<string, string>() { { "StoryId", story.StoryId.ToString() } };
                 try
                 {
-                    currentAttachment = await _consulHttpClient.PostFormAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment/add",
-                        parameters, attachments?.ToList());
+                    currentAttachment = _consulHttpClient.PostFormAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment/add",
+                        parameters, attachments?.ToList()).Result;
                 }
                 catch (Exception e)
                 {
                     ModelState.AddModelError("Audio", e.Message);
                     return BadRequest(ErrorMessages.ModelStateParser(ModelState));
                 }
-                
+
                 //Insert audio id to story
                 story.AudioId = currentAttachment.Id;
                 if (!_storyService.UpdateStory(story.StoryId, story))
@@ -177,7 +197,7 @@ namespace iread_story.Web.Controller
                     return BadRequest();
                 }
             }
-            
+
             return NoContent();
         }
 
@@ -196,24 +216,24 @@ namespace iread_story.Web.Controller
             {
                 return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
-            
+
             Story story = await _storyService.GetStory(storyWithCover.StoryId);
             if (story == null)
             {
                 return NotFound();
             }
-            
+
             //update old attachment if story has previous cover OR insert new attachment
-            
+
             List<IFormFile> attachments = new List<IFormFile>();
             attachments.Add(storyWithCover.StoryCover);
-            
+
             AttachmentsWithStoryId currentAttachment;
-            
+
             //update old attachment if story has previous cover
             if (story.CoverId != 0)
             {
-                var parameters = new Dictionary<string, string>() { {"Id",story.CoverId.ToString()} };
+                var parameters = new Dictionary<string, string>() { { "Id", story.CoverId.ToString() } };
                 try
                 {
                     await _consulHttpClient.PutFormAsync<AttachmentsWithStoryId>(_attachmentsMs, $"api/Attachment/update",
@@ -228,7 +248,7 @@ namespace iread_story.Web.Controller
             else
             {
                 //Insert attachment before update story
-                var parameters = new Dictionary<string, string>() { {"StoryId",story.StoryId.ToString()} };
+                var parameters = new Dictionary<string, string>() { { "StoryId", story.StoryId.ToString() } };
                 try
                 {
                     currentAttachment = await _consulHttpClient.PostFormAsync<AttachmentsWithStoryId>(_attachmentsMs, "api/Attachment/add",
@@ -239,7 +259,7 @@ namespace iread_story.Web.Controller
                     ModelState.AddModelError("Cover", e.Message);
                     return BadRequest(ErrorMessages.ModelStateParser(ModelState));
                 }
-                
+
                 //Insert cover id to story
                 story.CoverId = currentAttachment.Id;
                 if (!_storyService.UpdateStory(story.StoryId, story))
@@ -247,11 +267,11 @@ namespace iread_story.Web.Controller
                     return BadRequest();
                 }
             }
-            
+
             return NoContent();
         }
-        
-        
+
+
         [HttpDelete("delete/{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -262,7 +282,7 @@ namespace iread_story.Web.Controller
             {
                 return NotFound();
             }
-            
+
             //TODO Add Check if the user who deleted the story is its owner
 
             if (!_storyService.DeleteStory(id))
@@ -271,9 +291,9 @@ namespace iread_story.Web.Controller
             }
             return NoContent();
         }
-        
+
         //TODO Add api for post and update story tags
-        
+
         [HttpPut("addTags")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -289,13 +309,13 @@ namespace iread_story.Web.Controller
             {
                 return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
-            
+
             Story story = await _storyService.GetStory(storyWithTags.StoryId);
             if (story == null)
             {
                 return NotFound();
             }
-            
+
             if (storyWithTags.KeyWords != null)
             {
                 TagsWithStoryId tagsWithStoryId = new TagsWithStoryId()
@@ -315,8 +335,8 @@ namespace iread_story.Web.Controller
             }
             return NoContent();
         }
-        
-        
+
+
         [HttpPut("update")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -339,12 +359,12 @@ namespace iread_story.Web.Controller
             oldStory.Writer = story.Writer;
             oldStory.ReleaseDate = story.ReleaseDate;
             oldStory.StoryLevel = story.StoryLevel;
-            
+
             if (!_storyService.UpdateStory(story.StoryId, oldStory))
             {
                 return BadRequest();
             }
-        
+
             // if (story.KeyWords != null)
             // {
             //     await _consulHttpClient.PutBodyAsync<TagWithIdDto[]>("tag_ms", "/api/tags/update",
@@ -353,22 +373,22 @@ namespace iread_story.Web.Controller
             //             tagsDtos = story.KeyWords.ToList(), storyId = story.StoryId
             //         });
             // }
-        
+
             return NoContent();
         }
-        
+
         [HttpGet("GetStoriesByTagTitle/{title}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetStoriesByTagTitle(String title)
         {
             List<int> ids =
                 await _consulHttpClient.GetAsync<List<int>>("tag_ms", $"/api/tags/GetStoriesIdsByTagTitle/{title}");
-        
+
             var result = _storyService.GetStoriesByIds(ids);
-        
+
             return Ok(result);
         }
-        
+
         private async Task<AttachmentDTO> GetAttachmentFromAttachmentMs(int attachmentId)
         {
             try

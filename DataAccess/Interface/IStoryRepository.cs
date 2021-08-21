@@ -9,16 +9,14 @@ namespace iread_story.DataAccess.Interface
         Task<Story> GetStory(int id);
 
         void UpdateStory(int id, Story story);
-        void AddStory( Story story);
+        void AddStory(Story story);
 
         List<Story> GetStories();
 
         void DeleteStory(int id);
 
         bool Exists(int id);
-        
-        List<Story> GetStoriesByIds(List<int> ids);
-        
 
+        List<Story> GetStoriesByIds(List<int> ids);
     }
 }

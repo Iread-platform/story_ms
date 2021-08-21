@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace iread_story.Web.Controller
 {
     [Route("/api/Story/[controller]")]
-    public class PageController:ControllerBase
+    public class PageController : ControllerBase
     {
         private readonly PageService _pageService;
         private readonly IMapper _mapper;
@@ -21,12 +21,12 @@ namespace iread_story.Web.Controller
             _pageService = pageService;
             _mapper = mapper;
         }
-        
+
         // GET: api/page/get/1
         [HttpGet("get/{id}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPage([FromRoute]int id)
+        public async Task<IActionResult> GetPage([FromRoute] int id)
         {
             Page page = await _pageService.GetPageById(id);
 
@@ -37,7 +37,7 @@ namespace iread_story.Web.Controller
 
             return Ok(_mapper.Map<PageDto>(page));
         }
-        
+
         //GET: api/page/StoryPages/1
         [HttpGet("StoryPages/{id}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -52,11 +52,11 @@ namespace iread_story.Web.Controller
             List<Page> storyPages = await _pageService.GetPagesByStory(id);
             return Ok(_mapper.Map<List<PageWithoutStoryDto>>(storyPages));
         }
-        
+
         [HttpGet("getContent/{id}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetContent([FromRoute]int id)
+        public async Task<IActionResult> GetContent([FromRoute] int id)
         {
             Page page = await _pageService.GetPageById(id);
 
@@ -67,12 +67,12 @@ namespace iread_story.Web.Controller
 
             return Ok(page.Content);
         }
-        
+
         //POST: api/page/add
         [HttpPost("add")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult PostPage([FromBody]PageCreateDto pageCreateDto)
+        public IActionResult PostPage([FromBody] PageCreateDto pageCreateDto)
         {
             if (pageCreateDto == null)
             {
@@ -82,23 +82,19 @@ namespace iread_story.Web.Controller
             {
                 return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
-            
+
             if (!_pageService.IsStoryExists(pageCreateDto.StoryId))
             {
-                ModelState.AddModelError("page",ErrorMessages.INVALID_STORY_ID_VALUE);
+                ModelState.AddModelError("page", ErrorMessages.INVALID_STORY_ID_VALUE);
                 return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
 
             Page pageEntity = _mapper.Map<Page>(pageCreateDto);
-            
-            if (!_pageService.InsertPage(pageEntity))
-            {
-                return BadRequest();
-            }
 
+            _pageService.InsertPage(pageEntity);
             return CreatedAtAction("GetPage", new { id = pageEntity.PageId }, _mapper.Map<PageDto>(pageEntity));
         }
-        
+
         // PUT: api/page/update
         [HttpPut("update")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -106,34 +102,34 @@ namespace iread_story.Web.Controller
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> PutPage([FromBody] PageUpdateDto pageUpdateDto)
         {
-            if (pageUpdateDto==null)
+            if (pageUpdateDto == null)
             {
                 return BadRequest();
             }
-            
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
-            
+
             Page oldPage = await _pageService.GetPageById(pageUpdateDto.PageId);
 
             if (oldPage == null)
             {
                 return NotFound();
             }
-            
+
 
             Page pageEntity = _mapper.Map<Page>(pageUpdateDto);
 
-            if (!_pageService.UpdatePage(pageEntity , oldPage))
+            if (!_pageService.UpdatePage(pageEntity, oldPage))
             {
                 return BadRequest();
             }
 
             return NoContent();
         }
-        
+
         // DELETE: api/page/delete/1
         [HttpDelete("delete/{id}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -141,7 +137,7 @@ namespace iread_story.Web.Controller
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult DeletePage([FromRoute] int id)
         {
-            
+
             if (!_pageService.IsExists(id))
             {
                 return NotFound();
