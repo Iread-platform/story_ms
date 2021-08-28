@@ -7,26 +7,31 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Consul;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
 namespace iread_story.Web.Service
 {
-    public class ConsulHttpClientService:IConsulHttpClientService
+    public class ConsulHttpClientService : IConsulHttpClientService
     {
-         private readonly HttpClient _client;
+        private readonly HttpClient _client;
         private IConsulClient _consulClient;
-        
-        public ConsulHttpClientService(HttpClient client, IConsulClient consulclient)
+        private IHttpContextAccessor _httpContextAccessor;
+
+        public ConsulHttpClientService(HttpClient client,
+        IHttpContextAccessor httpContextAccessor,
+         IConsulClient consulclient)
         {
             _client = client;
             _consulClient = consulclient;
+            _httpContextAccessor = httpContextAccessor;
         }
-        
+
         public async Task<T> GetAsync<T>(string serviceName, string requestUri)
         {
             var uri = await GetRequestUriAsync(serviceName, requestUri);
-            
+
             var response = await _client.GetAsync(uri);
 
             if (!response.IsSuccessStatusCode)
@@ -34,7 +39,13 @@ namespace iread_story.Web.Service
                 return default(T);
             }
 
+            string token = await _httpContextAccessor.HttpContext.GetTokenAsync("access_token");
+
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
             var content = await response.Content.ReadAsStringAsync();
+
+
 
             return JsonConvert.DeserializeObject<T>(content);
         }
@@ -42,9 +53,9 @@ namespace iread_story.Web.Service
         public async Task<T> PostBodyAsync<T>(string serviceName, string requestUri, Object obj)
         {
             var uri = await GetRequestUriAsync(serviceName, requestUri);
-            
+
             var stringContent = new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json");
-            var response = await _client.PostAsync(uri,stringContent);
+            var response = await _client.PostAsync(uri, stringContent);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -75,18 +86,46 @@ namespace iread_story.Web.Service
                                 ContentLength = attachment.Length,
                                 ContentType = new MediaTypeHeaderValue(attachment.ContentType)
                             }
-                        },"File",attachment.FileName);
+                        }, "File", attachment.FileName);
                 }
             }
-            
+
             if (parameters != null)
             {
                 foreach (var parameter in parameters)
                 {
-                    formDataContent.Add(new StringContent(parameter.Value, Encoding.UTF8, "application/json"),parameter.Key);
+                    formDataContent.Add(new StringContent(parameter.Value, Encoding.UTF8, "application/json"), parameter.Key);
                 }
             }
-            var response = await _client.PostAsync(uri,formDataContent);
+            var response = await _client.PostAsync(uri, formDataContent);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return default(T);
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            return JsonConvert.DeserializeObject<T>(content);
+        }
+
+
+        public async Task<T> PostFormAsync<T>(string serviceName, string requestUri, Dictionary<string, string> parameters, Object obj)
+        {
+            var uri = await GetRequestUriAsync(serviceName, requestUri);
+
+            var formDataContent = new MultipartFormDataContent();
+
+            if (parameters != null)
+            {
+                foreach (var parameter in parameters)
+                {
+                    formDataContent.Add(new StringContent(parameter.Value, Encoding.UTF8, "application/json"), parameter.Key);
+                }
+            }
+            formDataContent.Add(new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json"));
+            var response = await _client.PostAsync(uri, formDataContent);
+
 
             if (!response.IsSuccessStatusCode)
             {
@@ -101,9 +140,9 @@ namespace iread_story.Web.Service
         public async Task<T> PutBodyAsync<T>(string serviceName, string requestUri, object obj)
         {
             var uri = await GetRequestUriAsync(serviceName, requestUri);
-            
+
             var stringContent = new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json");
-            var response = await _client.PutAsync(uri,stringContent);
+            var response = await _client.PutAsync(uri, stringContent);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -114,7 +153,7 @@ namespace iread_story.Web.Service
 
             return JsonConvert.DeserializeObject<T>(content);
         }
-        
+
         public async Task<T> PutFormAsync<T>(string serviceName, string requestUri, Dictionary<string, string> parameters, List<IFormFile>? attachments)
         {
             var uri = await GetRequestUriAsync(serviceName, requestUri);
@@ -133,18 +172,18 @@ namespace iread_story.Web.Service
                                 ContentLength = attachment.Length,
                                 ContentType = new MediaTypeHeaderValue(attachment.ContentType)
                             }
-                        },"File",attachment.FileName);
+                        }, "File", attachment.FileName);
                 }
             }
-            
+
             if (parameters != null)
             {
                 foreach (var ob in parameters)
                 {
-                    formDataContent.Add(new StringContent(ob.Value, Encoding.UTF8, "application/json"),ob.Key);
+                    formDataContent.Add(new StringContent(ob.Value, Encoding.UTF8, "application/json"), ob.Key);
                 }
             }
-            var response = await _client.PutAsync(uri,formDataContent);
+            var response = await _client.PutAsync(uri, formDataContent);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -176,7 +215,7 @@ namespace iread_story.Web.Service
             {
                 throw new Exception($"Consul service: '{serviceName}' was not found.");
             }
-            
+
             var uriBuilder = new UriBuilder
             {
                 Host = service.Address,

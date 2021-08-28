@@ -16,6 +16,13 @@ namespace iread_story.Web.Profile
             CreateMap<Story, CreateStoryAudioDto>().ReverseMap();
             CreateMap<Story, CreateStoryTagsDto>().ReverseMap();
             CreateMap<Story, UpdateStoryDto>().ReverseMap();
+            CreateMap<Story, SearchedStoryDto>().ReverseMap();
+            CreateMap<Story, SearchedStoryByLevelDto>().ReverseMap();
+            CreateMap<Story, ReadStoryDto>()
+            .ForMember(dest =>
+            dest.PagesCount,
+            opt => opt.MapFrom(src => src.Pages == null ? 0 : src.Pages.Count));
+
 
             //Page Mapper
             CreateMap<Page, PageDto>().ReverseMap();

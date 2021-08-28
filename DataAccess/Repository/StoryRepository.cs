@@ -55,7 +55,18 @@ namespace iread_story.DataAccess.Repository
 
         public List<Story> GetStoriesByIds(List<int> ids)
         {
-            return _context.Stories.Where(story => ids.Contains(story.StoryId)).ToList();
+            return _context.Stories.Include(s => s.Pages).Where(story => ids.Contains(story.StoryId)).ToList();
+        }
+
+        public async Task<List<Story>> GetByTitle(string title)
+        {
+            return await _context.Stories.Where(story => story.Title.Contains(title)).ToListAsync();
+        }
+
+        public async Task<List<Story>> GetByLevel(int level)
+        {
+            return await _context.Stories
+            .Where(story => story.StoryLevel <= level).ToListAsync();
         }
     }
 }

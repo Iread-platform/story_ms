@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using iread_story.DataAccess.Data.Entity;
@@ -18,5 +19,7 @@ namespace iread_story.DataAccess.Interface
         bool Exists(int id);
 
         List<Story> GetStoriesByIds(List<int> ids);
+        public Task<List<Story>> GetByTitle(string title);
+        public Task<List<Story>> GetByLevel(int level);
     }
 }

@@ -16,6 +16,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace iread_story
 {
@@ -42,22 +44,58 @@ namespace iread_story
         {
             services.AddCors(options =>
             {
-                options.AddPolicy(name: "_myAllowSpecificOrigins",builder => 
-                    builder
-                        .AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
+                options.AddPolicy(name: "_myAllowSpecificOrigins", builder =>
+                     builder
+                         .AllowAnyOrigin()
+                         .AllowAnyMethod()
+                         .AllowAnyHeader());
             });
+
+
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             // for routing
             services.AddControllers();
 
+            // for protected APIs
+            services.AddAuthentication("Bearer")
+            .AddIdentityServerAuthentication("Bearer", options =>
+            {
+                options.ApiName = "api1";
+                options.Authority = "http://192.168.1.118:5015";
+                options.RequireHttpsMetadata = false;
+            });
+
+            services.AddAuthorization(options =>
+            {
+
+                options.AddPolicy(Policies.Administrator, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireScope(Policies.Administrator);
+                });
+                options.AddPolicy(Policies.Teacher, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireScope(Policies.Teacher);
+                });
+                options.AddPolicy(Policies.Student, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireScope(Policies.Student);
+                });
+            });
+
+
+
 
             // for connection of DB
             services.AddDbContext<AppDbContext>(
-                options => { options.UseLoggerFactory(_myLoggerFactory).UseMySQL(Configuration.GetConnectionString("DefaultConnection"));
+                options =>
+                {
+                    options.UseLoggerFactory(_myLoggerFactory).UseMySQL(Configuration.GetConnectionString("DefaultConnection"));
                 });
-            
+
             // for consul
             services.AddSingleton<IConsulClient, ConsulClient>(p => new ConsulClient(consulConfig =>
             {
@@ -67,28 +105,29 @@ namespace iread_story
             services.AddConsulConfig(Configuration);
             services.AddHttpClient<IConsulHttpClientService, ConsulHttpClientService>();
 
-            
+
             // for swagger
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "iread_story", Version = "v1" });
             });
-            
+
             // Inject the public repository
             services.AddScoped<IPublicRepository, PublicRepository>();
-            
+
             // Inject story service
             services.AddScoped<StoryService>();
-  
+
             //for page service
             services.AddScoped<PageService>();
-            
-            
-            IMapper mapper = new MapperConfiguration(config=>{
+
+
+            IMapper mapper = new MapperConfiguration(config =>
+            {
                 config.AddProfile<AutoMapperProfile>();
             }).CreateMapper();
             services.AddSingleton(mapper);
-            services.AddHttpClient<IConsulHttpClientService,ConsulHttpClientService>();
+            services.AddHttpClient<IConsulHttpClientService, ConsulHttpClientService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -111,6 +150,7 @@ namespace iread_story
 
             app.UseRouting();
             app.UseCors("_myAllowSpecificOrigins");
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

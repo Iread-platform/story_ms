@@ -76,5 +76,15 @@ namespace iread_story.Web.Service
         {
             return _repository.GetStoryService.GetStoriesByIds(ids);
         }
+
+        internal async Task<List<Story>> GetByTitle(string title)
+        {
+            return await _repository.GetStoryService.GetByTitle(title);
+        }
+
+        internal async Task<List<Story>> GetByLevel(int level)
+        {
+            return await _repository.GetStoryService.GetByLevel(level);
+        }
     }
 }

@@ -7,6 +7,7 @@ using AutoMapper;
 using Consul;
 using iread_story.DataAccess.Data.Entity;
 using iread_story.DataAccess.Interface;
+using iread_story.Web.Dto.UserDto;
 using iread_story.Web.DTO;
 using iread_story.Web.DTO.Page;
 using iread_story.Web.DTO.Review;
@@ -15,6 +16,7 @@ using iread_story.Web.DTO.Tag;
 using iread_story.Web.Service;
 using iread_story.Web.Util;
 using iread_story.Web.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -85,6 +87,183 @@ namespace iread_story.Web.Controller
             return Ok(viewStory);
         }
 
+
+        [HttpGet("get-by-title/{title}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByTitle(string title)
+        {
+            List<Story> stories = await _storyService.GetByTitle(title);
+            if (stories == null || stories.Count == 0)
+            {
+                return NotFound();
+            }
+
+            List<SearchedStoryDto> SearchedStories = _mapper.Map<List<SearchedStoryDto>>(stories);
+            await GetAttachmentsFromAttachmentMs(SearchedStories, stories);
+            await GetReviewsFromReviewMs(SearchedStories);
+            return Ok(SearchedStories);
+        }
+
+        [HttpGet("get-by-level/{level}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByLevel([FromRoute] int level)
+        {
+            List<Story> stories = await _storyService.GetByLevel(level);
+            if (stories == null || stories.Count == 0)
+            {
+                return NotFound();
+            }
+
+            List<SearchedStoryByLevelDto> SearchedStories = _mapper.Map<List<SearchedStoryByLevelDto>>(stories);
+            await GetAttachmentsFromAttachmentMs(SearchedStories, stories);
+            return Ok(SearchedStories);
+        }
+
+
+
+        [HttpGet("get-by-my-appropriated-level")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize]
+        public async Task<IActionResult> GetByMyAppropriatedLevel()
+        {
+
+            string myId = User.Claims.Where(c => c.Type == "sub")
+                             .Select(c => c.Value).SingleOrDefault();
+
+            UserDto user = await _consulHttpClient.GetAsync<UserDto>("identity_ms", $"/api/Identity/{myId}/get");
+
+            List<Story> stories = await _storyService.GetByLevel(user.Level);
+
+            if (stories == null || stories.Count == 0)
+            {
+                return NotFound();
+            }
+
+            List<SearchedStoryByLevelDto> SearchedStories = _mapper.Map<List<SearchedStoryByLevelDto>>(stories);
+            await GetAttachmentsFromAttachmentMs(SearchedStories, stories);
+            return Ok(SearchedStories);
+        }
+
+
+        [HttpGet("get-by-my-appropriated-level-and-not-read-yet")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize]
+        public async Task<IActionResult> GetByMyAppropriatedLevelAndNotReadYet()
+        {
+
+            string myId = User.Claims.Where(c => c.Type == "sub")
+                             .Select(c => c.Value).SingleOrDefault();
+
+            UserDto user = await _consulHttpClient.GetAsync<UserDto>("identity_ms", $"/api/Identity/{myId}/get");
+
+            List<Story> stories = await _storyService.GetByLevel(user.Level);
+
+
+            List<MiniStoryDto> readedStories = await _consulHttpClient.GetAsync<List<MiniStoryDto>>("interaction_ms", "api/Interaction/Reading/my-reading-stories");
+            List<int> readedStoryIds = new List<int>();
+            readedStories.ForEach(s => readedStoryIds.Add(s.StoryId));
+
+
+            List<Story> notReadedStories = stories.FindAll(s => !readedStoryIds.Contains(s.StoryId));
+
+            if (notReadedStories == null || notReadedStories.Count == 0)
+            {
+                return NotFound();
+            }
+
+            List<SearchedStoryByLevelDto> searchedStories = _mapper.Map<List<SearchedStoryByLevelDto>>(notReadedStories);
+            await GetAttachmentsFromAttachmentMs(searchedStories, notReadedStories);
+            return Ok(searchedStories);
+        }
+
+
+        private async Task GetReviewsFromReviewMs(List<SearchedStoryDto> searchedStories)
+        {
+            List<StoryReview> res = null;
+            Dictionary<string, string> formData = new Dictionary<string, string>();
+            string storyIds = "";
+            searchedStories.ForEach(s =>
+            {
+                storyIds += s.StoryId + ",";
+            });
+            storyIds = storyIds.Remove(storyIds.Length - 1);
+
+            formData.Add("ids", storyIds);
+            res = await _consulHttpClient.PostFormAsync<List<StoryReview>>(_reviewMs, $"/api/Review/get-by-story_ids", formData, res);
+
+            for (int index = 0; index < searchedStories.Count; index++)
+            {
+                searchedStories.ElementAt(index).Rating = res.ElementAt(index);
+            }
+        }
+
+        private async Task GetAttachmentsFromAttachmentMs(List<SearchedStoryDto> searchedStories, List<Story> stories)
+        {
+            List<AttachmentDTO> res = null;
+            Dictionary<string, string> formData = new Dictionary<string, string>();
+            string coverIds = "";
+            stories.ForEach(s =>
+            {
+                coverIds += s.CoverId + ",";
+            });
+            coverIds = coverIds.Remove(coverIds.Length - 1);
+
+            formData.Add("ids", coverIds);
+            res = await _consulHttpClient.PostFormAsync<List<AttachmentDTO>>(_attachmentsMs, $"/api/attachment/get-by-ids", formData, res);
+
+            for (int index = 0; index < searchedStories.Count; index++)
+            {
+                searchedStories.ElementAt(index).StoryCover = res.ElementAt(index);
+            }
+        }
+
+        private async Task GetAttachmentsFromAttachmentMs(List<SearchedStoryByLevelDto> searchedStories, List<Story> stories)
+        {
+            List<AttachmentDTO> res = null;
+            Dictionary<string, string> formData = new Dictionary<string, string>();
+            string coverIds = "";
+            stories.ForEach(s =>
+            {
+                coverIds += s.CoverId + ",";
+            });
+            coverIds = coverIds.Remove(coverIds.Length - 1);
+
+            formData.Add("ids", coverIds);
+            res = await _consulHttpClient.PostFormAsync<List<AttachmentDTO>>(_attachmentsMs, $"/api/attachment/get-by-ids", formData, res);
+
+            for (int index = 0; index < searchedStories.Count; index++)
+            {
+                searchedStories.ElementAt(index).StoryCover = res.ElementAt(index);
+            }
+        }
+
+
+        private async Task GetAttachmentsFromAttachmentMs(List<ReadStoryDto> readedStories, List<Story> stories)
+        {
+            List<AttachmentDTO> res = null;
+            Dictionary<string, string> formData = new Dictionary<string, string>();
+            string coverIds = "";
+            stories.ForEach(s =>
+            {
+                coverIds += s.CoverId + ",";
+            });
+            coverIds = coverIds.Remove(coverIds.Length - 1);
+
+            formData.Add("ids", coverIds);
+            res = await _consulHttpClient.PostFormAsync<List<AttachmentDTO>>(_attachmentsMs, $"/api/attachment/get-by-ids", formData, res);
+
+            for (int index = 0; index < readedStories.Count; index++)
+            {
+                readedStories.ElementAt(index).StoryCover = res.ElementAt(index);
+            }
+        }
+
+
+
         [HttpGet("getStoryToListen/{id:int}", Name = "GetStoryToListen")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -102,6 +281,25 @@ namespace iread_story.Web.Controller
             viewStory.PagesCount = viewStory.Pages.Count;
 
             return Ok(viewStory);
+        }
+
+
+        [HttpPost("get-stories-to-read", Name = "GetStoriesToRead")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetStoriesToRead([FromForm] string ids)
+        {
+            List<int> idsAsInt = Array.ConvertAll(ids.Split(","), s => int.Parse(s)).OfType<int>().ToList();
+            List<Story> stories = _storyService.GetStoriesByIds(idsAsInt);
+            if (stories == null || !stories.Any())
+            {
+                return NotFound();
+            }
+
+            List<ReadStoryDto> viewStories = _mapper.Map<List<ReadStoryDto>>(stories);
+            await GetAttachmentsFromAttachmentMs(viewStories, stories);
+
+            return Ok(viewStories);
         }
 
         [HttpPost("add")]
