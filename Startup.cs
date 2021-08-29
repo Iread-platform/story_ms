@@ -57,38 +57,6 @@ namespace iread_story
             // for routing
             services.AddControllers();
 
-            // for protected APIs
-            services.AddAuthentication("Bearer")
-            .AddIdentityServerAuthentication("Bearer", options =>
-            {
-                options.ApiName = "api1";
-                options.Authority = "http://192.168.1.118:5015";
-                options.RequireHttpsMetadata = false;
-            });
-
-            services.AddAuthorization(options =>
-            {
-
-                options.AddPolicy(Policies.Administrator, policy =>
-                {
-                    policy.RequireAuthenticatedUser();
-                    policy.RequireScope(Policies.Administrator);
-                });
-                options.AddPolicy(Policies.Teacher, policy =>
-                {
-                    policy.RequireAuthenticatedUser();
-                    policy.RequireScope(Policies.Teacher);
-                });
-                options.AddPolicy(Policies.Student, policy =>
-                {
-                    policy.RequireAuthenticatedUser();
-                    policy.RequireScope(Policies.Student);
-                });
-            });
-
-
-
-
             // for connection of DB
             services.AddDbContext<AppDbContext>(
                 options =>
@@ -128,6 +96,39 @@ namespace iread_story
             }).CreateMapper();
             services.AddSingleton(mapper);
             services.AddHttpClient<IConsulHttpClientService, ConsulHttpClientService>();
+
+            // for protected APIs
+            var provider = services.BuildServiceProvider();
+            var consulHttpClientService = provider.GetRequiredService<IConsulHttpClientService>();
+            var identityService = consulHttpClientService.GetAgentService("identity_ms");
+            services.AddAuthentication("Bearer")
+            .AddIdentityServerAuthentication("Bearer", options =>
+            {
+                options.ApiName = "api1";
+                options.Authority = "http://" + identityService.Address + ":" + identityService.Port;
+                options.RequireHttpsMetadata = false;
+            });
+
+            services.AddAuthorization(options =>
+            {
+
+                options.AddPolicy(Policies.Administrator, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireScope(Policies.Administrator);
+                });
+                options.AddPolicy(Policies.Teacher, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireScope(Policies.Teacher);
+                });
+                options.AddPolicy(Policies.Student, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireScope(Policies.Student);
+                });
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
