@@ -7,6 +7,7 @@ using iread_story.Web.DTO.Page;
 using iread_story.Web.Util;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using iread_story.Web.DTO;
 
 namespace iread_story.Web.Controller
 {
@@ -15,11 +16,15 @@ namespace iread_story.Web.Controller
     {
         private readonly PageService _pageService;
         private readonly IMapper _mapper;
+        private static string _attachmentsMs = "attachment_ms";
+        private readonly IConsulHttpClientService _consulHttpClient;
 
-        public PageController(PageService pageService, IMapper mapper)
+
+        public PageController(PageService pageService, IMapper mapper, IConsulHttpClientService consulHttpClient)
         {
             _pageService = pageService;
             _mapper = mapper;
+            _consulHttpClient = consulHttpClient;
         }
 
         // GET: api/page/get/1
@@ -34,8 +39,11 @@ namespace iread_story.Web.Controller
             {
                 return NotFound();
             }
+            PageDto res = _mapper.Map<PageDto>(page);
+            res.Story.StoryAudio = await _consulHttpClient.GetAsync<AttachmentDTO>(_attachmentsMs, $"/api/Attachment/get/{page.Story.AudioId}");
+            res.Story.StoryCover = await _consulHttpClient.GetAsync<AttachmentDTO>(_attachmentsMs, $"/api/Attachment/get/{page.Story.CoverId}");
 
-            return Ok(_mapper.Map<PageDto>(page));
+            return Ok(res);
         }
 
         //GET: api/page/StoryPages/1
