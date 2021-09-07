@@ -9,6 +9,7 @@ using iread_story.DataAccess.Data.Entity;
 using iread_story.DataAccess.Interface;
 using iread_story.Web.Dto.UserDto;
 using iread_story.Web.DTO;
+using iread_story.Web.DTO.Category;
 using iread_story.Web.DTO.Page;
 using iread_story.Web.DTO.Review;
 using iread_story.Web.DTO.Story;
@@ -32,6 +33,7 @@ namespace iread_story.Web.Controller
         private readonly IMapper _mapper;
         private readonly IConsulHttpClientService _consulHttpClient;
         private readonly string _attachmentsMs = "attachment_ms";
+        private readonly string _categoriesMs = "tag_ms";
         private readonly string _reviewMs = "review_ms";
         private readonly StoryService _storyService;
 
@@ -62,6 +64,7 @@ namespace iread_story.Web.Controller
                 viewStory.StoryCover = await GetAttachmentFromAttachmentMs(story.CoverId);
                 viewStory.Rating = await GetReviewFromReviewMs(story.StoryId);
                 viewStory.KeyWords = await GetTagsFromTagMs(story.StoryId);
+                viewStory.Category = await GetCategoryFromMs(story.StoryId);
                 viewStories.Add(viewStory);
             }
 
@@ -84,9 +87,14 @@ namespace iread_story.Web.Controller
             viewStory.StoryCover = await GetAttachmentFromAttachmentMs(story.CoverId);
             viewStory.Rating = await GetReviewFromReviewMs(story.StoryId);
             viewStory.KeyWords = await GetTagsFromTagMs(story.StoryId);
+            viewStory.Category = await GetCategoryFromMs(story.StoryId);
             return Ok(viewStory);
         }
 
+        private Task<InnerCategoryDto> GetCategoryFromMs(int storyId)
+        {
+            return _consulHttpClient.GetAsync<InnerCategoryDto>("tag_ms", $"/api/category/get-by-story/{storyId}");
+        }
 
         [HttpGet("get-by-title/{title}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -101,9 +109,11 @@ namespace iread_story.Web.Controller
 
             List<SearchedStoryDto> SearchedStories = _mapper.Map<List<SearchedStoryDto>>(stories);
             await GetAttachmentsFromAttachmentMs(SearchedStories, stories);
+            await GetCategoriesFromCategoryMs(SearchedStories, stories);
             await GetReviewsFromReviewMs(SearchedStories);
             return Ok(SearchedStories);
         }
+
 
         [HttpGet("get-by-level/{level}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -118,6 +128,7 @@ namespace iread_story.Web.Controller
 
             List<SearchedStoryByLevelDto> SearchedStories = _mapper.Map<List<SearchedStoryByLevelDto>>(stories);
             await GetAttachmentsFromAttachmentMs(SearchedStories, stories);
+            await GetCategoriesFromCategoryMs(SearchedStories, stories);
             return Ok(SearchedStories);
         }
 
@@ -144,6 +155,7 @@ namespace iread_story.Web.Controller
 
             List<SearchedStoryByLevelDto> SearchedStories = _mapper.Map<List<SearchedStoryByLevelDto>>(stories);
             await GetAttachmentsFromAttachmentMs(SearchedStories, stories);
+            await GetCategoriesFromCategoryMs(SearchedStories, stories);
             return Ok(SearchedStories);
         }
 
@@ -177,90 +189,12 @@ namespace iread_story.Web.Controller
 
             List<SearchedStoryByLevelDto> searchedStories = _mapper.Map<List<SearchedStoryByLevelDto>>(notReadedStories);
             await GetAttachmentsFromAttachmentMs(searchedStories, notReadedStories);
+            await GetCategoriesFromCategoryMs(searchedStories, stories);
             return Ok(searchedStories);
         }
 
 
-        private async Task GetReviewsFromReviewMs(List<SearchedStoryDto> searchedStories)
-        {
-            List<StoryReview> res = null;
-            Dictionary<string, string> formData = new Dictionary<string, string>();
-            string storyIds = "";
-            searchedStories.ForEach(s =>
-            {
-                storyIds += s.StoryId + ",";
-            });
-            storyIds = storyIds.Remove(storyIds.Length - 1);
 
-            formData.Add("ids", storyIds);
-            res = await _consulHttpClient.PostFormAsync<List<StoryReview>>(_reviewMs, $"/api/Review/get-by-story_ids", formData, res);
-
-            for (int index = 0; index < searchedStories.Count; index++)
-            {
-                searchedStories.ElementAt(index).Rating = res.ElementAt(index);
-            }
-        }
-
-        private async Task GetAttachmentsFromAttachmentMs(List<SearchedStoryDto> searchedStories, List<Story> stories)
-        {
-            List<AttachmentDTO> res = null;
-            Dictionary<string, string> formData = new Dictionary<string, string>();
-            string coverIds = "";
-            stories.ForEach(s =>
-            {
-                coverIds += s.CoverId + ",";
-            });
-            coverIds = coverIds.Remove(coverIds.Length - 1);
-
-            formData.Add("ids", coverIds);
-            res = await _consulHttpClient.PostFormAsync<List<AttachmentDTO>>(_attachmentsMs, $"/api/attachment/get-by-ids", formData, res);
-
-            for (int index = 0; index < searchedStories.Count; index++)
-            {
-                searchedStories.ElementAt(index).StoryCover = res.ElementAt(index);
-            }
-        }
-
-        private async Task GetAttachmentsFromAttachmentMs(List<SearchedStoryByLevelDto> searchedStories, List<Story> stories)
-        {
-            List<AttachmentDTO> res = null;
-            Dictionary<string, string> formData = new Dictionary<string, string>();
-            string coverIds = "";
-            stories.ForEach(s =>
-            {
-                coverIds += s.CoverId + ",";
-            });
-            coverIds = coverIds.Remove(coverIds.Length - 1);
-
-            formData.Add("ids", coverIds);
-            res = await _consulHttpClient.PostFormAsync<List<AttachmentDTO>>(_attachmentsMs, $"/api/attachment/get-by-ids", formData, res);
-
-            for (int index = 0; index < searchedStories.Count; index++)
-            {
-                searchedStories.ElementAt(index).StoryCover = res.ElementAt(index);
-            }
-        }
-
-
-        private async Task GetAttachmentsFromAttachmentMs(List<ReadStoryDto> readedStories, List<Story> stories)
-        {
-            List<AttachmentDTO> res = null;
-            Dictionary<string, string> formData = new Dictionary<string, string>();
-            string coverIds = "";
-            stories.ForEach(s =>
-            {
-                coverIds += s.CoverId + ",";
-            });
-            coverIds = coverIds.Remove(coverIds.Length - 1);
-
-            formData.Add("ids", coverIds);
-            res = await _consulHttpClient.PostFormAsync<List<AttachmentDTO>>(_attachmentsMs, $"/api/attachment/get-by-ids", formData, res);
-
-            for (int index = 0; index < readedStories.Count; index++)
-            {
-                readedStories.ElementAt(index).StoryCover = res.ElementAt(index);
-            }
-        }
 
 
 
@@ -279,6 +213,8 @@ namespace iread_story.Web.Controller
             viewStory.Audio = await GetAttachmentFromAttachmentMs(story.AudioId);
             viewStory.Pages = _mapper.Map<List<PageWithoutStoryDto>>(story.Pages);
             viewStory.PagesCount = viewStory.Pages.Count;
+            viewStory.Category = await GetCategoryFromMs(story.StoryId);
+
 
             return Ok(viewStory);
         }
@@ -298,7 +234,7 @@ namespace iread_story.Web.Controller
 
             List<ReadStoryDto> viewStories = _mapper.Map<List<ReadStoryDto>>(stories);
             await GetAttachmentsFromAttachmentMs(viewStories, stories);
-
+            await GetCategoriesFromCategoryMs(viewStories, stories);
             return Ok(viewStories);
         }
 
@@ -563,15 +499,6 @@ namespace iread_story.Web.Controller
                 return BadRequest();
             }
 
-            // if (story.KeyWords != null)
-            // {
-            //     await _consulHttpClient.PutBodyAsync<TagWithIdDto[]>("tag_ms", "/api/tags/update",
-            //         new TagsWithStoryId
-            //         {
-            //             tagsDtos = story.KeyWords.ToList(), storyId = story.StoryId
-            //         });
-            // }
-
             return NoContent();
         }
 
@@ -629,6 +556,67 @@ namespace iread_story.Web.Controller
             }
 
             return null;
+        }
+
+        private async Task GetReviewsFromReviewMs<T>(List<T> searchedStories) where T : GenericStoryDto
+        {
+            List<StoryReview> res = null;
+            Dictionary<string, string> formData = new Dictionary<string, string>();
+            string storyIds = "";
+            searchedStories.ForEach(s =>
+            {
+                storyIds += s.StoryId + ",";
+            });
+            storyIds = storyIds.Remove(storyIds.Length - 1);
+
+            formData.Add("ids", storyIds);
+            res = await _consulHttpClient.PostFormAsync<List<StoryReview>>(_reviewMs, $"/api/Review/get-by-story_ids", formData, res);
+
+            for (int index = 0; index < searchedStories.Count; index++)
+            {
+                searchedStories.ElementAt(index).Rating = res.ElementAt(index);
+            }
+        }
+
+        private async Task GetCategoriesFromCategoryMs<T>(List<T> searchedStories, List<Story> stories) where T : GenericStoryDto
+        {
+            List<InnerCategoryDto> res = null;
+            Dictionary<string, string> formData = new Dictionary<string, string>();
+            string storyIds = "";
+            stories.ForEach(s =>
+            {
+                storyIds += s.StoryId + ",";
+            });
+            storyIds = storyIds.Remove(storyIds.Length - 1);
+
+            formData.Add("storiesIds", storyIds);
+            res = await _consulHttpClient.PostFormAsync<List<InnerCategoryDto>>(_categoriesMs, $"/Api/category/get-by-stories", formData, res);
+
+            for (int index = 0; index < searchedStories.Count; index++)
+            {
+                searchedStories.ElementAt(index).Category = res.ElementAt(index);
+            }
+        }
+
+
+        private async Task GetAttachmentsFromAttachmentMs<T>(List<T> storiesDto, List<Story> stories) where T : GenericStoryDto
+        {
+            List<AttachmentDTO> res = null;
+            Dictionary<string, string> formData = new Dictionary<string, string>();
+            string coverIds = "";
+            stories.ForEach(s =>
+            {
+                coverIds += s.CoverId + ",";
+            });
+            coverIds = coverIds.Remove(coverIds.Length - 1);
+
+            formData.Add("ids", coverIds);
+            res = await _consulHttpClient.PostFormAsync<List<AttachmentDTO>>(_attachmentsMs, $"/api/attachment/get-by-ids", formData, res);
+
+            for (int index = 0; index < storiesDto.Count; index++)
+            {
+                storiesDto.ElementAt(index).StoryCover = res.ElementAt(index);
+            }
         }
     }
 }
