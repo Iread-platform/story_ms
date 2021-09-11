@@ -7,6 +7,7 @@ using AutoMapper;
 using Consul;
 using iread_story.DataAccess.Data.Entity;
 using iread_story.DataAccess.Interface;
+using iread_story.Web.Dto.Interaction;
 using iread_story.Web.Dto.UserDto;
 using iread_story.Web.DTO;
 using iread_story.Web.DTO.Category;
@@ -33,6 +34,7 @@ namespace iread_story.Web.Controller
         private readonly IMapper _mapper;
         private readonly IConsulHttpClientService _consulHttpClient;
         private readonly string _attachmentsMs = "attachment_ms";
+        private readonly string _interactionMs = "interaction_ms";
         private readonly string _categoriesMs = "tag_ms";
         private readonly string _reviewMs = "review_ms";
         private readonly StoryService _storyService;
@@ -212,9 +214,10 @@ namespace iread_story.Web.Controller
             ListenStoryDto viewStory = new ListenStoryDto();
             viewStory.Audio = await GetAttachmentFromAttachmentMs(story.AudioId);
             viewStory.Pages = _mapper.Map<List<PageWithoutStoryDto>>(story.Pages);
+
             viewStory.PagesCount = viewStory.Pages.Count;
             viewStory.Category = await GetCategoryFromMs(story.StoryId);
-
+            await GetInteractionsFromInteractionMs(viewStory.Pages);
 
             return Ok(viewStory);
         }
@@ -616,6 +619,27 @@ namespace iread_story.Web.Controller
             for (int index = 0; index < storiesDto.Count; index++)
             {
                 storiesDto.ElementAt(index).StoryCover = res.ElementAt(index);
+            }
+        }
+
+
+        private async Task GetInteractionsFromInteractionMs(List<PageWithoutStoryDto> pages)
+        {
+            List<List<HighLightDto>> res = null;
+            Dictionary<string, string> formData = new Dictionary<string, string>();
+            string pageIds = "";
+            pages.ForEach(p =>
+            {
+                pageIds += p.PageId + ",";
+            });
+            pageIds = pageIds.Remove(pageIds.Length - 1);
+
+            formData.Add("pagesIds", pageIds);
+            res = await _consulHttpClient.PostFormAsync<List<List<HighLightDto>>>(_interactionMs, $"/api/Interaction/HighLight/get-by-pages", formData, res);
+
+            for (int index = 0; index < pages.Count; index++)
+            {
+                pages.ElementAt(index).HighLights = res.ElementAt(index);
             }
         }
     }
