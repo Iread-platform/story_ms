@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using iread_story.Web.Dto.Interaction;
 using iread_story.Web.Util;
 
 namespace iread_story.Web.DTO.Page
@@ -11,5 +13,6 @@ namespace iread_story.Web.DTO.Page
 
         public string Content { get; set; }
         public string Words { get; set; }
+        public List<HighLightDto> HighLights { get; set; }
     }
 }
