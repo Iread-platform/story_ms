@@ -7,6 +7,8 @@ namespace iread_story.Web.DTO.Story
     {
         public string Title { set; get; }
         public int PagesCount { get; set; }
+        public string Color { get; set; }
+
 
     }
 }

@@ -214,7 +214,7 @@ namespace iread_story.Web.Controller
             ListenStoryDto viewStory = new ListenStoryDto();
             viewStory.Audio = await GetAttachmentFromAttachmentMs(story.AudioId);
             viewStory.Pages = _mapper.Map<List<PageWithoutStoryDto>>(story.Pages);
-
+            viewStory.Color = story.Color;
             viewStory.PagesCount = viewStory.Pages.Count;
             viewStory.Category = await GetCategoryFromMs(story.StoryId);
             await GetInteractionsFromInteractionMs(viewStory.Pages);
@@ -512,9 +512,14 @@ namespace iread_story.Web.Controller
             List<int> ids =
                 await _consulHttpClient.GetAsync<List<int>>("tag_ms", $"/api/tags/GetStoriesIdsByTagTitle/{title}");
 
-            var result = _storyService.GetStoriesByIds(ids);
+            var stories = _storyService.GetStoriesByIds(ids);
 
-            return Ok(result);
+            List<SearchedStoryDto> SearchedStories = _mapper.Map<List<SearchedStoryDto>>(stories);
+            await GetAttachmentsFromAttachmentMs(SearchedStories, stories);
+            await GetCategoriesFromCategoryMs(SearchedStories, stories);
+            await GetReviewsFromReviewMs(SearchedStories);
+
+            return Ok(SearchedStories);
         }
 
         private async Task<AttachmentDTO> GetAttachmentFromAttachmentMs(int attachmentId)
