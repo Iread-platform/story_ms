@@ -11,6 +11,8 @@ namespace iread_story.Web.DTO.Story
 
         public int StoryLevel { get; set; }
         public string Writer { get; set; }
+        public string Color { get; set; }
+
 
     }
 }

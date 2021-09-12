@@ -10,6 +10,8 @@ namespace iread_story.Web.DTO.Story
         public int PagesCount { get; set; }
         public List<PageWithoutStoryDto> Pages { get; set; }
         public InnerCategoryDto Category { get; set; }
+        public string Color { get; set; }
+
 
     }
 }

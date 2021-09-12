@@ -27,5 +27,7 @@ namespace iread_story.Web.DTO.Story
         public AttachmentDTO StoryCover { get; set; }
         public AttachmentDTO StoryAudio { get; set; }
         public StoryReview Rating { get; set; }
+        public string Color { get; set; }
+
     }
 }
