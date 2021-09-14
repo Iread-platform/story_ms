@@ -86,5 +86,12 @@ namespace iread_story.Web.Service
         {
             return await _repository.GetStoryService.GetByLevel(level);
         }
+
+        internal async Task<List<Story>> GetByIds(List<int> ids)
+        {
+            List<Story> res = new List<Story>();
+            ids.ForEach(id => res.Add(_repository.GetStoryService.GetStory(id).GetAwaiter().GetResult()));
+            return res;
+        }
     }
 }
