@@ -19,7 +19,7 @@ namespace iread_story.DataAccess.Repository
 
         public async Task<Story> GetStory(int id)
         {
-            return await _context.Stories.Include(s => s.Pages).Where(s => s.StoryId == id).FirstAsync();
+            return await _context.Stories.Include(s => s.Pages).Where(s => s.StoryId == id).SingleOrDefaultAsync();
         }
 
         public void UpdateStory(int id, Story story)
@@ -68,5 +68,12 @@ namespace iread_story.DataAccess.Repository
             return await _context.Stories
             .Where(story => story.StoryLevel <= level).ToListAsync();
         }
+
+        public async Task<List<Story>> GetByIds(List<int> ids)
+        {
+            return await _context.Stories
+            .Where(story => ids.Contains(story.StoryId)).ToListAsync();
+        }
+
     }
 }

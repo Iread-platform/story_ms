@@ -21,5 +21,6 @@ namespace iread_story.DataAccess.Interface
         List<Story> GetStoriesByIds(List<int> ids);
         public Task<List<Story>> GetByTitle(string title);
         public Task<List<Story>> GetByLevel(int level);
+        public Task<List<Story>> GetByIds(List<int> ids);
     }
 }

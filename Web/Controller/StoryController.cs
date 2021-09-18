@@ -117,6 +117,26 @@ namespace iread_story.Web.Controller
         }
 
 
+
+        [HttpPost("get-by-ids")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByIds([FromForm] string ids)
+        {
+
+            string[] idsAsStringArray = ids.Split(",");
+            int[] idsAsIntArray = Array.ConvertAll(idsAsStringArray, s => int.Parse(s));
+            List<int> idsAslst = idsAsIntArray.OfType<int>().ToList();
+            List<Story> stories = await _storyService.GetByIds(idsAslst);
+            if (stories == null || stories.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(_mapper.Map<List<ViewStoryDto>>(stories));
+        }
+
+
         [HttpGet("get-by-level/{level}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
