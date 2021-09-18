@@ -650,7 +650,8 @@ namespace iread_story.Web.Controller
 
         private async Task GetInteractionsFromInteractionMs(List<PageWithoutStoryDto> pages)
         {
-            List<List<HighLightDto>> res = null;
+            List<List<HighLightDto>> highlights = null;
+            List<List<CommentDto>> comments = null;
             Dictionary<string, string> formData = new Dictionary<string, string>();
             string pageIds = "";
             pages.ForEach(p =>
@@ -660,11 +661,17 @@ namespace iread_story.Web.Controller
             pageIds = pageIds.Remove(pageIds.Length - 1);
 
             formData.Add("pagesIds", pageIds);
-            res = await _consulHttpClient.PostFormAsync<List<List<HighLightDto>>>(_interactionMs, $"/api/Interaction/HighLight/get-by-pages", formData, res);
+            highlights = await _consulHttpClient.PostFormAsync<List<List<HighLightDto>>>(_interactionMs, $"/api/Interaction/HighLight/get-by-pages", formData, highlights);
 
             for (int index = 0; index < pages.Count; index++)
             {
-                pages.ElementAt(index).HighLights = res.ElementAt(index);
+                pages.ElementAt(index).HighLights = highlights.ElementAt(index);
+            }
+            comments = await _consulHttpClient.PostFormAsync<List<List<CommentDto>>>(_interactionMs, $"/api/Interaction/Comment/get-by-pages", formData, highlights);
+
+            for (int index = 0; index < pages.Count; index++)
+            {
+                pages.ElementAt(index).Comments = comments.ElementAt(index);
             }
         }
     }
