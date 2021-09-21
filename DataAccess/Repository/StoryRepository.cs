@@ -22,7 +22,7 @@ namespace iread_story.DataAccess.Repository
             return await _context.Stories.Include(s => s.Pages).Where(s => s.StoryId == id).SingleOrDefaultAsync();
         }
 
-        public void UpdateStory(int id, Story story)
+        public void UpdateStory(Story story)
         {
             _context.Attach(story);
             _context.Stories.Update(story);

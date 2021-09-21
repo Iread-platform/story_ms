@@ -214,12 +214,7 @@ namespace iread_story.Web.Controller
             await GetCategoriesFromCategoryMs(searchedStories, stories);
             return Ok(searchedStories);
         }
-
-
-
-
-
-
+        
         [HttpGet("getStoryToListen/{id:int}", Name = "GetStoryToListen")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -312,8 +307,14 @@ namespace iread_story.Web.Controller
                 return NotFound();
             }
 
+            //Check if the user who deleted the story is its owner
+            if (story.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
+            {
+                ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
+            
             //update old attachment if story has previous audio OR insert new attachment
-
             List<IFormFile> attachments = new List<IFormFile>();
             attachments.Add(storyWithAudio.StoryAudio);
 
@@ -351,10 +352,8 @@ namespace iread_story.Web.Controller
 
                 //Insert audio id to story
                 story.AudioId = currentAttachment.Id;
-                if (!_storyService.UpdateStory(story.StoryId, story))
-                {
-                    return BadRequest();
-                }
+                
+                _storyService.UpdateStory(story);
             }
 
             return NoContent();
@@ -383,8 +382,14 @@ namespace iread_story.Web.Controller
                 return NotFound();
             }
 
+            //Check if the user who deleted the story is its owner
+            if (story.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
+            {
+                ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
+            
             //update old attachment if story has previous cover OR insert new attachment
-
             List<IFormFile> attachments = new List<IFormFile>();
             attachments.Add(storyWithCover.StoryCover);
 
@@ -422,10 +427,7 @@ namespace iread_story.Web.Controller
 
                 //Insert cover id to story
                 story.CoverId = currentAttachment.Id;
-                if (!_storyService.UpdateStory(story.StoryId, story))
-                {
-                    return BadRequest();
-                }
+                _storyService.UpdateStory(story);
             }
 
             return NoContent();
@@ -481,6 +483,13 @@ namespace iread_story.Web.Controller
             {
                 return NotFound();
             }
+            
+            //Check if the user who deleted the story is its owner
+            if (story.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
+            {
+                ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
 
             if (storyWithTags.KeyWords != null)
             {
@@ -520,6 +529,13 @@ namespace iread_story.Web.Controller
             {
                 return NotFound();
             }
+            
+            //Check if the user who deleted the story is its owner
+            if (oldStory.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
+            {
+                ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
 
             oldStory.Description = story.Description;
             oldStory.Title = story.Title;
@@ -527,10 +543,7 @@ namespace iread_story.Web.Controller
             oldStory.ReleaseDate = story.ReleaseDate;
             oldStory.StoryLevel = story.StoryLevel;
 
-            if (!_storyService.UpdateStory(story.StoryId, oldStory))
-            {
-                return BadRequest();
-            }
+            _storyService.UpdateStory(oldStory);
 
             return NoContent();
         }

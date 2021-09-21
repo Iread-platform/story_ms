@@ -9,7 +9,7 @@ namespace iread_story.DataAccess.Interface
     {
         Task<Story> GetStory(int id);
 
-        void UpdateStory(int id, Story story);
+        void UpdateStory(Story story);
         void AddStory(Story story);
 
         List<Story> GetStories();
