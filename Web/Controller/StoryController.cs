@@ -307,7 +307,7 @@ namespace iread_story.Web.Controller
                 return NotFound();
             }
 
-            //Check if the user who deleted the story is its owner
+            //Check if the user who edit the story is its owner
             if (story.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
             {
                 ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
@@ -382,7 +382,7 @@ namespace iread_story.Web.Controller
                 return NotFound();
             }
 
-            //Check if the user who deleted the story is its owner
+            //Check if the user who edit the story is its owner
             if (story.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
             {
                 ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
@@ -484,7 +484,7 @@ namespace iread_story.Web.Controller
                 return NotFound();
             }
             
-            //Check if the user who deleted the story is its owner
+            //Check if the user who edit the story is its owner
             if (story.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
             {
                 ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
@@ -530,7 +530,7 @@ namespace iread_story.Web.Controller
                 return NotFound();
             }
             
-            //Check if the user who deleted the story is its owner
+            //Check if the user who edit the story is its owner
             if (oldStory.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
             {
                 ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
