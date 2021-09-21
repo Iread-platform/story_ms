@@ -223,7 +223,7 @@ namespace iread_story.Web.Controller
         [HttpGet("getStoryToListen/{id:int}", Name = "GetStoryToListen")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> getStoryToListen(int id)
+        public async Task<IActionResult> GetStoryToListen(int id)
         {
             Story story = await _storyService.GetStory(id);
             if (story == null)
@@ -262,6 +262,7 @@ namespace iread_story.Web.Controller
         }
 
         [HttpPost("add")]
+        [Authorize(Policy = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddStory([FromBody] CreateStoryTitleDto storyWithTitle)
