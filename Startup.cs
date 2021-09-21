@@ -155,6 +155,11 @@ namespace iread_story
                     policy.RequireAuthenticatedUser();
                     policy.RequireScope(Policies.Student);
                 });
+                options.AddPolicy(Policies.SchoolManager, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireScope(Policies.SchoolManager);
+                });
             });
 
         }
