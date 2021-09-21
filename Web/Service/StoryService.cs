@@ -54,17 +54,9 @@ namespace iread_story.Web.Service
             return _repository.GetStoryService.GetStories();
         }
 
-        public bool DeleteStory(int id)
+        public void DeleteStory(Story story)
         {
-            try
-            {
-                _repository.GetStoryService.DeleteStory(id);
-                return true;
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return false;
-            }
+            _repository.GetStoryService.DeleteStory(story);
         }
 
         public bool Exists(int id)

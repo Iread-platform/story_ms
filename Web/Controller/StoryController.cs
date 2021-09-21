@@ -279,8 +279,8 @@ namespace iread_story.Web.Controller
 
             Story storyToAdd = _mapper.Map<Story>(storyWithTitle);
 
-            //TODO Add user id that come from token to story model before add it
-
+            storyToAdd.ManagerId = User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault();
+            
             if (!_storyService.AddStory(storyToAdd))
             {
                 return BadRequest();
@@ -290,6 +290,7 @@ namespace iread_story.Web.Controller
         }
 
         [HttpPut("addAudio")]
+        [Authorize(Policy = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -360,6 +361,7 @@ namespace iread_story.Web.Controller
         }
 
         [HttpPut("addCover")]
+        [Authorize(Policy = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -431,28 +433,34 @@ namespace iread_story.Web.Controller
 
 
         [HttpDelete("delete/{id:int}")]
+        [Authorize(Policy = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult DeleteStory(int id)
         {
-            if (!_storyService.Exists(id))
+            Story story = _storyService.GetStory(id).GetAwaiter().GetResult();
+            
+            if (story == null)
             {
                 return NotFound();
             }
-
-            //TODO Add Check if the user who deleted the story is its owner
-
-            if (!_storyService.DeleteStory(id))
+            
+            //Check if the user who deleted the story is its owner
+            if (story.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
             {
-                return BadRequest();
+                ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
+
+            _storyService.DeleteStory(story);
+           
             return NoContent();
         }
 
-        //TODO Add api for post and update story tags
-
+        
         [HttpPut("addTags")]
+        [Authorize(Policy = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -496,6 +504,7 @@ namespace iread_story.Web.Controller
 
 
         [HttpPut("update")]
+        [Authorize(Policy = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

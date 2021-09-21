@@ -40,11 +40,9 @@ namespace iread_story.DataAccess.Repository
             return _context.Stories.ToList();
         }
 
-        public void DeleteStory(int id)
+        public void DeleteStory(Story story)
         {
-            var storyToRemove = new Story() { StoryId = id };
-            _context.Stories.Attach(storyToRemove);
-            _context.Stories.Remove(storyToRemove);
+            _context.Stories.Remove(story);
             _context.SaveChanges();
         }
 
