@@ -10,7 +10,7 @@ namespace iread_story.Web.DTO.Story
         [DataType(DataType.Upload)]
         [AllowedExtensions(new string[] {
             ".jpeg",".png",".gif",".tiff",".psd",".pdf",".eps",".ai",".indd",".raw",
-            ".JPEG",".PNG",".GIF",".TIFF",".PSD",".PDF",".EPS",".AI",".INDD",".RAW"},
+            ".JPEG",".PNG",".GIF",".TIFF",".PSD",".PDF",".EPS",".AI",".INDD",".RAW",".jpg"},
             ErrorMessage = ErrorMessages.AUDIO_FILE_EXTENSION_NOT_ALLOWED)]
         public IFormFile StoryCover { get; set; }
 

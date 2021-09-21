@@ -214,16 +214,11 @@ namespace iread_story.Web.Controller
             await GetCategoriesFromCategoryMs(searchedStories, stories);
             return Ok(searchedStories);
         }
-
-
-
-
-
-
+        
         [HttpGet("getStoryToListen/{id:int}", Name = "GetStoryToListen")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> getStoryToListen(int id)
+        public async Task<IActionResult> GetStoryToListen(int id)
         {
             Story story = await _storyService.GetStory(id);
             if (story == null)
@@ -262,6 +257,7 @@ namespace iread_story.Web.Controller
         }
 
         [HttpPost("add")]
+        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddStory([FromBody] CreateStoryTitleDto storyWithTitle)
@@ -278,8 +274,8 @@ namespace iread_story.Web.Controller
 
             Story storyToAdd = _mapper.Map<Story>(storyWithTitle);
 
-            //TODO Add user id that come from token to story model before add it
-
+            storyToAdd.ManagerId = User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault();
+            
             if (!_storyService.AddStory(storyToAdd))
             {
                 return BadRequest();
@@ -289,6 +285,7 @@ namespace iread_story.Web.Controller
         }
 
         [HttpPut("addAudio")]
+        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -310,8 +307,14 @@ namespace iread_story.Web.Controller
                 return NotFound();
             }
 
+            //Check if the user who edit the story is its owner
+            if (story.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
+            {
+                ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
+            
             //update old attachment if story has previous audio OR insert new attachment
-
             List<IFormFile> attachments = new List<IFormFile>();
             attachments.Add(storyWithAudio.StoryAudio);
 
@@ -349,16 +352,15 @@ namespace iread_story.Web.Controller
 
                 //Insert audio id to story
                 story.AudioId = currentAttachment.Id;
-                if (!_storyService.UpdateStory(story.StoryId, story))
-                {
-                    return BadRequest();
-                }
+                
+                _storyService.UpdateStory(story);
             }
 
             return NoContent();
         }
 
         [HttpPut("addCover")]
+        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -380,8 +382,14 @@ namespace iread_story.Web.Controller
                 return NotFound();
             }
 
+            //Check if the user who edit the story is its owner
+            if (story.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
+            {
+                ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
+            
             //update old attachment if story has previous cover OR insert new attachment
-
             List<IFormFile> attachments = new List<IFormFile>();
             attachments.Add(storyWithCover.StoryCover);
 
@@ -419,10 +427,7 @@ namespace iread_story.Web.Controller
 
                 //Insert cover id to story
                 story.CoverId = currentAttachment.Id;
-                if (!_storyService.UpdateStory(story.StoryId, story))
-                {
-                    return BadRequest();
-                }
+                _storyService.UpdateStory(story);
             }
 
             return NoContent();
@@ -430,28 +435,34 @@ namespace iread_story.Web.Controller
 
 
         [HttpDelete("delete/{id:int}")]
+        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult DeleteStory(int id)
         {
-            if (!_storyService.Exists(id))
+            Story story = _storyService.GetStory(id).GetAwaiter().GetResult();
+            
+            if (story == null)
             {
                 return NotFound();
             }
-
-            //TODO Add Check if the user who deleted the story is its owner
-
-            if (!_storyService.DeleteStory(id))
+            
+            //Check if the user who deleted the story is its owner
+            if (story.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
             {
-                return BadRequest();
+                ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
+
+            _storyService.DeleteStory(story);
+           
             return NoContent();
         }
 
-        //TODO Add api for post and update story tags
-
+        
         [HttpPut("addTags")]
+        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -471,6 +482,13 @@ namespace iread_story.Web.Controller
             if (story == null)
             {
                 return NotFound();
+            }
+            
+            //Check if the user who edit the story is its owner
+            if (story.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
+            {
+                ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
 
             if (storyWithTags.KeyWords != null)
@@ -495,6 +513,7 @@ namespace iread_story.Web.Controller
 
 
         [HttpPut("update")]
+        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -510,6 +529,13 @@ namespace iread_story.Web.Controller
             {
                 return NotFound();
             }
+            
+            //Check if the user who edit the story is its owner
+            if (oldStory.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
+            {
+                ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
 
             oldStory.Description = story.Description;
             oldStory.Title = story.Title;
@@ -517,10 +543,7 @@ namespace iread_story.Web.Controller
             oldStory.ReleaseDate = story.ReleaseDate;
             oldStory.StoryLevel = story.StoryLevel;
 
-            if (!_storyService.UpdateStory(story.StoryId, oldStory))
-            {
-                return BadRequest();
-            }
+            _storyService.UpdateStory(oldStory);
 
             return NoContent();
         }

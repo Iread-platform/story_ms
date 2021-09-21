@@ -8,7 +8,6 @@ namespace iread_story.DataAccess.Data.Entity
     [Table("Stories")]
     public class Story
     {
-
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Required]
@@ -27,6 +26,9 @@ namespace iread_story.DataAccess.Data.Entity
         public int CoverId { get; set; }
 
         public int AudioId { get; set; }
+
+        [Required]
+        public string ManagerId { get; set; }
 
         public string Color { get; set; }
 

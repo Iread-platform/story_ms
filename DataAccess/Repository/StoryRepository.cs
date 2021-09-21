@@ -22,7 +22,7 @@ namespace iread_story.DataAccess.Repository
             return await _context.Stories.Include(s => s.Pages).Where(s => s.StoryId == id).SingleOrDefaultAsync();
         }
 
-        public void UpdateStory(int id, Story story)
+        public void UpdateStory(Story story)
         {
             _context.Attach(story);
             _context.Stories.Update(story);
@@ -40,11 +40,9 @@ namespace iread_story.DataAccess.Repository
             return _context.Stories.ToList();
         }
 
-        public void DeleteStory(int id)
+        public void DeleteStory(Story story)
         {
-            var storyToRemove = new Story() { StoryId = id };
-            _context.Stories.Attach(storyToRemove);
-            _context.Stories.Remove(storyToRemove);
+            _context.Stories.Remove(story);
             _context.SaveChanges();
         }
 

@@ -23,17 +23,9 @@ namespace iread_story.Web.Service
             return await _repository.GetStoryService.GetStory(id);
         }
 
-        public bool UpdateStory(int id, Story story)
-        {
-            try
-            {
-                _repository.GetStoryService.UpdateStory(id, story);
-                return true;
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return false;
-            }
+        public void UpdateStory(Story story)
+        { 
+            _repository.GetStoryService.UpdateStory(story);
         }
 
         public bool AddStory(Story story)
@@ -54,17 +46,9 @@ namespace iread_story.Web.Service
             return _repository.GetStoryService.GetStories();
         }
 
-        public bool DeleteStory(int id)
+        public void DeleteStory(Story story)
         {
-            try
-            {
-                _repository.GetStoryService.DeleteStory(id);
-                return true;
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return false;
-            }
+            _repository.GetStoryService.DeleteStory(story);
         }
 
         public bool Exists(int id)
