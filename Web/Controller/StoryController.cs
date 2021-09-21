@@ -262,7 +262,7 @@ namespace iread_story.Web.Controller
         }
 
         [HttpPost("add")]
-        [Authorize(Policy = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddStory([FromBody] CreateStoryTitleDto storyWithTitle)
@@ -290,7 +290,7 @@ namespace iread_story.Web.Controller
         }
 
         [HttpPut("addAudio")]
-        [Authorize(Policy = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -361,7 +361,7 @@ namespace iread_story.Web.Controller
         }
 
         [HttpPut("addCover")]
-        [Authorize(Policy = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -433,7 +433,7 @@ namespace iread_story.Web.Controller
 
 
         [HttpDelete("delete/{id:int}")]
-        [Authorize(Policy = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -460,7 +460,7 @@ namespace iread_story.Web.Controller
 
         
         [HttpPut("addTags")]
-        [Authorize(Policy = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -504,7 +504,7 @@ namespace iread_story.Web.Controller
 
 
         [HttpPut("update")]
-        [Authorize(Policy = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
