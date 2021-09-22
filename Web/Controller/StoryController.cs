@@ -196,21 +196,26 @@ namespace iread_story.Web.Controller
 
             List<Story> stories = await _storyService.GetByLevel(user.Level);
 
-
-            List<MiniStoryDto> readedStories = await _consulHttpClient.GetAsync<List<MiniStoryDto>>("interaction_ms", "api/Interaction/Reading/my-reading-stories");
-            List<int> readedStoryIds = new List<int>();
-            readedStories.ForEach(s => readedStoryIds.Add(s.StoryId));
-
-
-            List<Story> notReadedStories = stories.FindAll(s => !readedStoryIds.Contains(s.StoryId));
-
-            if (notReadedStories == null || notReadedStories.Count == 0)
+            
+            List<Story> notReadiedStories = stories; // as default
+            List<MiniStoryDto> readiedStories = await _consulHttpClient.GetAsync<List<MiniStoryDto>>("interaction_ms", "api/Interaction/Reading/my-reading-stories");
+            
+            //Filter by readied ones
+            if (readiedStories != null && readiedStories.Count() != 0)
             {
-                return NotFound();
-            }
+                List<int> readiedStoryIds = new List<int>();
+                readiedStories.ForEach(s => readiedStoryIds.Add(s.StoryId));
+                notReadiedStories = stories.FindAll(s => !readiedStoryIds.Contains(s.StoryId));
 
-            List<SearchedStoryByLevelDto> searchedStories = _mapper.Map<List<SearchedStoryByLevelDto>>(notReadedStories);
-            await GetAttachmentsFromAttachmentMs(searchedStories, notReadedStories);
+                if (notReadiedStories == null || notReadiedStories.Count == 0)
+                {
+                    return Ok(notReadiedStories);
+                }
+            }
+            
+            //If user have stories not readied yet => fetch full information
+            List<SearchedStoryByLevelDto> searchedStories = _mapper.Map<List<SearchedStoryByLevelDto>>(notReadiedStories);
+            await GetAttachmentsFromAttachmentMs(searchedStories, notReadiedStories);
             await GetCategoriesFromCategoryMs(searchedStories, stories);
             return Ok(searchedStories);
         }

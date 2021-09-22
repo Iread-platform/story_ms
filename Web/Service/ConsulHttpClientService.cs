@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Consul;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authentication;
 
 namespace iread_story.Web.Service
 {
@@ -16,15 +17,24 @@ namespace iread_story.Web.Service
     {
         private readonly HttpClient _client;
         private IConsulClient _consulClient;
-
-        public ConsulHttpClientService(HttpClient client, IConsulClient consulclient)
+        private IHttpContextAccessor _httpContextAccessor;
+        
+        public ConsulHttpClientService(HttpClient client, IConsulClient consulclient, IHttpContextAccessor httpContextAccessor)
         {
             _client = client;
             _consulClient = consulclient;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<T> GetAsync<T>(string serviceName, string requestUri)
         {
+            if (_httpContextAccessor.HttpContext != null)
+            {
+                string token = await _httpContextAccessor.HttpContext.GetTokenAsync("access_token");
+
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
             var uri = await GetRequestUriAsync(serviceName, requestUri);
 
             var response = await _client.GetAsync(uri);
@@ -56,6 +66,8 @@ namespace iread_story.Web.Service
             return JsonConvert.DeserializeObject<T>(content);
 
         }
+        
+        
 
         public async Task<T> PostFormAsync<T>(string serviceName, string requestUri,
             Dictionary<string, string> parameters, List<IFormFile>? attachments)
