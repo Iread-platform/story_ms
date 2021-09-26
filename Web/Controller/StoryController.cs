@@ -220,6 +220,53 @@ namespace iread_story.Web.Controller
             return Ok(searchedStories);
         }
         
+         [HttpGet("my-reading-stories/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        // [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<IActionResult> GetMyReadingStories(string id)
+        {
+            // string myId = User.Claims.Where(c => c.Type == "sub")
+            //     .Select(c => c.Value).SingleOrDefault();
+            
+            List<MiniStoryDto> readiedStories = await _consulHttpClient.GetAsync<List<MiniStoryDto>>("interaction_ms", $"api/Interaction/Reading/my-reading-stories/{id}");
+
+            if (readiedStories == null || !readiedStories.Any())
+            {
+                return Ok(readiedStories);
+            }
+            
+            string ids = "";
+            foreach (var story in readiedStories)
+            {
+                ids += story.StoryId + ",";
+            }
+            ids = ids.Remove(ids.Length - 1);
+            List<int> idsAsInt = Array.ConvertAll(ids.Split(","), s => int.Parse(s)).OfType<int>().ToList();
+           
+            List<Story> stories = _storyService.GetStoriesByIds(idsAsInt);
+            
+            if (stories == null || stories.Count == 0)
+            {
+                return NotFound();
+            }
+            
+            List<ViewStoryDto> viewStories = new List<ViewStoryDto>();
+           
+            foreach (Story story in stories)
+            {
+                ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
+                viewStory.StoryAudio = await GetAttachmentFromAttachmentMs(story.AudioId);
+                viewStory.StoryCover = await GetAttachmentFromAttachmentMs(story.CoverId);
+                viewStory.Rating = await GetReviewFromReviewMs(story.StoryId);
+                viewStory.KeyWords = await GetTagsFromTagMs(story.StoryId);
+                viewStory.Category = await GetCategoryFromMs(story.StoryId);
+                viewStories.Add(viewStory);
+            }
+
+            return Ok(viewStories);
+        }
+        
         [HttpGet("getStoryToListen/{id:int}", Name = "GetStoryToListen")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
