@@ -194,10 +194,23 @@ namespace iread_story.Web.Controller
 
             UserDto user = await _consulHttpClient.GetAsync<UserDto>("identity_ms", $"/api/Identity/{myId}/get");
 
+            List<StoryWithSectionDto> finalResultList = new List<StoryWithSectionDto>();
+            //Get stories that related to user level
             List<Story> stories = await _storyService.GetByLevel(user.Level);
-
+            StoryWithSectionDto appropriateStories = new StoryWithSectionDto();
             
-            List<Story> notReadiedStories = stories; // as default
+            List<SearchedStoryByLevelDto> searchedStoriesByLevel = _mapper.Map<List<SearchedStoryByLevelDto>>(stories);
+            if (searchedStoriesByLevel != null && searchedStoriesByLevel.Count() != 0)
+            {
+                await GetAttachmentsFromAttachmentMs(searchedStoriesByLevel, stories);
+                await GetCategoriesFromCategoryMs(searchedStoriesByLevel, stories);
+            }
+           
+            appropriateStories.SectionTitle = SectionType.AppropriatedLevel.ToString();
+            appropriateStories.Stories = searchedStoriesByLevel;
+            finalResultList.Add(appropriateStories);
+
+            List<Story> notReadiedStories = new List<Story>();
             List<MiniStoryDto> readiedStories = await _consulHttpClient.GetAsync<List<MiniStoryDto>>("interaction_ms", "api/Interaction/Reading/my-reading-stories");
             
             //Filter by readied ones
@@ -206,18 +219,25 @@ namespace iread_story.Web.Controller
                 List<int> readiedStoryIds = new List<int>();
                 readiedStories.ForEach(s => readiedStoryIds.Add(s.StoryId));
                 notReadiedStories = stories.FindAll(s => !readiedStoryIds.Contains(s.StoryId));
-
-                if (notReadiedStories == null || notReadiedStories.Count == 0)
-                {
-                    return Ok(notReadiedStories);
-                }
+            
+                // if (notReadiedStories == null || notReadiedStories.Count == 0)
+                // {
+                //     return Ok(notReadiedStories);
+                // }
             }
             
             //If user have stories not readied yet => fetch full information
-            List<SearchedStoryByLevelDto> searchedStories = _mapper.Map<List<SearchedStoryByLevelDto>>(notReadiedStories);
-            await GetAttachmentsFromAttachmentMs(searchedStories, notReadiedStories);
-            await GetCategoriesFromCategoryMs(searchedStories, stories);
-            return Ok(searchedStories);
+            List<SearchedStoryByLevelDto> searchedStoriesNotReadies = _mapper.Map<List<SearchedStoryByLevelDto>>(notReadiedStories);
+            if (searchedStoriesNotReadies != null && searchedStoriesNotReadies.Count() != 0)
+            {
+                await GetAttachmentsFromAttachmentMs(searchedStoriesNotReadies, notReadiedStories);
+                await GetCategoriesFromCategoryMs(searchedStoriesNotReadies, notReadiedStories);
+            }
+            StoryWithSectionDto appropriateStoriesNotReadied = new StoryWithSectionDto();
+            appropriateStoriesNotReadied.SectionTitle = SectionType.AppropriateAndNotReadied.ToString();
+            appropriateStoriesNotReadied.Stories = searchedStoriesNotReadies;
+            finalResultList.Add(appropriateStoriesNotReadied);
+            return Ok(finalResultList);
         }
         
          [HttpGet("my-reading-stories/{id}")]
