@@ -36,17 +36,14 @@ namespace iread_story.Web.Service
             _repository.GetPageRepository.DecreasePagesNumbersFrom(storyId, index);
         }
 
-        public bool UpdatePage(Page page, Page oldPage)
+        public void UpdatePage(Page page, Page oldPage)
         {
-            try
-            {
-                _repository.GetPageRepository.Update(page.PageId, page, oldPage);
-                return true;
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return false;
-            }
+            _repository.GetPageRepository.Update(page.PageId, page, oldPage);
+
+        }
+        public void UpdatePage(Page page)
+        {
+            _repository.GetPageRepository.Update(page);
         }
 
         public void Delete(Page page)

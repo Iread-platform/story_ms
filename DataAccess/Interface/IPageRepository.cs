@@ -15,7 +15,7 @@ namespace iread_story.DataAccess.Interface
         public void Delete(Page page);
 
         public void Update(int id, Page page, Page oldPage);
-
+        public void Update(Page page);
         bool IsExists(int id);
 
         public Task<int> GetPagesCount(int storyId);
