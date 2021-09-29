@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using iread_story.Web.Util;
 
@@ -20,5 +21,8 @@ namespace iread_story.DataAccess.Data.Entity
         public string Content { get; set; }
         public string Words { get; set; }
         public int No { get; set; }
+        [DefaultValue(-1)]
+        public int ImageId { get; set; }
+
     }
 }

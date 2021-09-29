@@ -154,13 +154,47 @@ namespace iread_story.Web.Controller
                 return NotFound();
             }
 
-
             Page pageEntity = _mapper.Map<Page>(pageUpdateDto);
+            _pageService.UpdatePage(pageEntity, oldPage);
 
-            if (!_pageService.UpdatePage(pageEntity, oldPage))
+            return NoContent();
+        }
+
+
+
+        // PUT: api/page/3/add-image
+        [HttpPut("{id}/add-image")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> AddImage([FromRoute] int id, [FromForm] int attachmentId)
+        {
+
+            if (attachmentId < 1)
             {
-                return BadRequest();
+                ModelState.AddModelError("attachmentId", "attachmentId has not valid value");
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
+
+            AttachmentDTO res = _consulHttpClient.GetAsync<AttachmentDTO>(_attachmentsMs, $"/api/Attachment/get/{attachmentId}").GetAwaiter().GetResult();
+            if (res == null)
+            {
+                ModelState.AddModelError("attachmentId", "No attachment has this id");
+            }
+
+            Page page = _pageService.GetPageById(id).GetAwaiter().GetResult();
+            if (page == null)
+            {
+                ModelState.AddModelError("id", "No page has this id");
+            }
+
+            if (ModelState.ErrorCount > 0)
+            {
+                return BadRequest(ErrorMessages.ModelStateParser(ModelState));
+            }
+
+            page.ImageId = attachmentId;
+            _pageService.UpdatePage(page);
 
             return NoContent();
         }

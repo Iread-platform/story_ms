@@ -196,25 +196,25 @@ namespace iread_story.Web.Controller
 
             //List that contain appropriated stories and appropriated stories that have not readied yet
             List<StoryWithSectionDto> finalResultList = new List<StoryWithSectionDto>();
-            
+
             //Get stories that related to user level
             List<Story> stories = await _storyService.GetByLevel(user.Level);
             StoryWithSectionDto appropriateStories = await GetSearchedStoriesThatRelatedToUserLevel(stories);
-            
+
             //Add appropriated stories to final result list
             finalResultList.Add(appropriateStories);
 
             //Get appropriated stories that a user have not readied yet  
             StoryWithSectionDto appropriateStoriesNotReadied = await GetAppropriateStoriesThatNotReadied(stories);
-            
+
             //Add appropriated stories that not readied to final result list
             finalResultList.Add(appropriateStoriesNotReadied);
-            
-            
+
+
             return Ok(finalResultList);
         }
 
-        
+
         [HttpGet("my-reading-stories/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -223,14 +223,14 @@ namespace iread_story.Web.Controller
         {
             // string myId = User.Claims.Where(c => c.Type == "sub")
             //     .Select(c => c.Value).SingleOrDefault();
-            
+
             List<MiniStoryDto> readiedStories = await _consulHttpClient.GetAsync<List<MiniStoryDto>>("interaction_ms", $"api/Interaction/Reading/my-reading-stories/{id}");
 
             if (readiedStories == null || !readiedStories.Any())
             {
                 return Ok(readiedStories);
             }
-            
+
             string ids = "";
             foreach (var story in readiedStories)
             {
@@ -238,16 +238,16 @@ namespace iread_story.Web.Controller
             }
             ids = ids.Remove(ids.Length - 1);
             List<int> idsAsInt = Array.ConvertAll(ids.Split(","), s => int.Parse(s)).OfType<int>().ToList();
-           
+
             List<Story> stories = _storyService.GetStoriesByIds(idsAsInt);
-            
+
             if (stories == null || stories.Count == 0)
             {
                 return NotFound();
             }
-            
+
             List<ViewStoryDto> viewStories = new List<ViewStoryDto>();
-           
+
             foreach (Story story in stories)
             {
                 ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
@@ -261,7 +261,7 @@ namespace iread_story.Web.Controller
 
             return Ok(viewStories);
         }
-        
+
         [HttpGet("getStoryToListen/{id:int}", Name = "GetStoryToListen")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -279,7 +279,8 @@ namespace iread_story.Web.Controller
             viewStory.Color = story.Color;
             viewStory.PagesCount = viewStory.Pages.Count;
             viewStory.Category = await GetCategoryFromMs(story.StoryId);
-            await GetInteractionsFromInteractionMs(viewStory.Pages);
+            await GetPagesInfo(viewStory.Pages);
+
 
             return Ok(viewStory);
         }
@@ -304,7 +305,7 @@ namespace iread_story.Web.Controller
         }
 
         [HttpPost("add")]
-        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddStory([FromBody] CreateStoryTitleDto storyWithTitle)
@@ -322,7 +323,7 @@ namespace iread_story.Web.Controller
             Story storyToAdd = _mapper.Map<Story>(storyWithTitle);
 
             storyToAdd.ManagerId = User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault();
-            
+
             if (!_storyService.AddStory(storyToAdd))
             {
                 return BadRequest();
@@ -332,7 +333,7 @@ namespace iread_story.Web.Controller
         }
 
         [HttpPut("addAudio")]
-        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -360,7 +361,7 @@ namespace iread_story.Web.Controller
                 ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
                 return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
-            
+
             //update old attachment if story has previous audio OR insert new attachment
             List<IFormFile> attachments = new List<IFormFile>();
             attachments.Add(storyWithAudio.StoryAudio);
@@ -399,7 +400,7 @@ namespace iread_story.Web.Controller
 
                 //Insert audio id to story
                 story.AudioId = currentAttachment.Id;
-                
+
                 _storyService.UpdateStory(story);
             }
 
@@ -407,7 +408,7 @@ namespace iread_story.Web.Controller
         }
 
         [HttpPut("addCover")]
-        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -435,7 +436,7 @@ namespace iread_story.Web.Controller
                 ModelState.AddModelError("Story", ErrorMessages.NOT_OWNER);
                 return BadRequest(ErrorMessages.ModelStateParser(ModelState));
             }
-            
+
             //update old attachment if story has previous cover OR insert new attachment
             List<IFormFile> attachments = new List<IFormFile>();
             attachments.Add(storyWithCover.StoryCover);
@@ -482,19 +483,19 @@ namespace iread_story.Web.Controller
 
 
         [HttpDelete("delete/{id:int}")]
-        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult DeleteStory(int id)
         {
             Story story = _storyService.GetStory(id).GetAwaiter().GetResult();
-            
+
             if (story == null)
             {
                 return NotFound();
             }
-            
+
             //Check if the user who deleted the story is its owner
             if (story.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
             {
@@ -503,13 +504,13 @@ namespace iread_story.Web.Controller
             }
 
             _storyService.DeleteStory(story);
-           
+
             return NoContent();
         }
 
-        
+
         [HttpPut("addTags")]
-        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -530,7 +531,7 @@ namespace iread_story.Web.Controller
             {
                 return NotFound();
             }
-            
+
             //Check if the user who edit the story is its owner
             if (story.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
             {
@@ -560,7 +561,7 @@ namespace iread_story.Web.Controller
 
 
         [HttpPut("update")]
-        [Authorize(Roles =  Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles = Policies.SchoolManager, AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -576,7 +577,7 @@ namespace iread_story.Web.Controller
             {
                 return NotFound();
             }
-            
+
             //Check if the user who edit the story is its owner
             if (oldStory.ManagerId != User.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault())
             {
@@ -611,7 +612,7 @@ namespace iread_story.Web.Controller
 
             return Ok(SearchedStories);
         }
-        
+
         private async Task<StoryWithSectionDto> GetSearchedStoriesThatRelatedToUserLevel(List<Story> stories)
         {
             List<SearchedStoryByLevelDto> searchedStoriesByLevel = _mapper.Map<List<SearchedStoryByLevelDto>>(stories);
@@ -621,7 +622,7 @@ namespace iread_story.Web.Controller
                 await GetAttachmentsFromAttachmentMs(searchedStoriesByLevel, stories);
                 await GetCategoriesFromCategoryMs(searchedStoriesByLevel, stories);
             }
-           
+
             appropriateStories.SectionTitle = SectionType.AppropriatedLevel.ToString();
             appropriateStories.Stories = searchedStoriesByLevel;
             return appropriateStories;
@@ -630,16 +631,16 @@ namespace iread_story.Web.Controller
         {
             List<Story> notReadiedStories = new List<Story>();
             List<MiniStoryDto> readiedStories = await _consulHttpClient.GetAsync<List<MiniStoryDto>>("interaction_ms", "api/Interaction/Reading/my-reading-stories");
-            
+
             //Filter by readied ones
             if (readiedStories != null && readiedStories.Count() != 0)
             {
                 List<int> readiedStoryIds = new List<int>();
                 readiedStories.ForEach(s => readiedStoryIds.Add(s.StoryId));
                 notReadiedStories = stories.FindAll(s => !readiedStoryIds.Contains(s.StoryId));
-                
+
             }
-            
+
             //If user have stories not readied yet => fetch full information
             List<SearchedStoryByLevelDto> searchedStoriesNotReadies = _mapper.Map<List<SearchedStoryByLevelDto>>(notReadiedStories);
             if (searchedStoriesNotReadies != null && searchedStoriesNotReadies.Count() != 0)
@@ -759,10 +760,11 @@ namespace iread_story.Web.Controller
         }
 
 
-        private async Task GetInteractionsFromInteractionMs(List<PageWithoutStoryDto> pages)
+        private async Task GetPagesInfo(List<PageWithoutStoryDto> pages)
         {
             List<List<HighLightDto>> highlights = null;
             List<List<CommentDto>> comments = null;
+            List<AttachmentDTO> attachmentDTOs = null;
             Dictionary<string, string> formData = new Dictionary<string, string>();
             string pageIds = "";
             pages.ForEach(p =>
@@ -783,6 +785,21 @@ namespace iread_story.Web.Controller
             for (int index = 0; index < pages.Count; index++)
             {
                 pages.ElementAt(index).Comments = comments.ElementAt(index);
+            }
+
+            string attachmentIds = "";
+            pages.ForEach(p =>
+            {
+                attachmentIds += p.ImageId + ",";
+            });
+            attachmentIds = attachmentIds.Remove(attachmentIds.Length - 1);
+            formData.Clear();
+            formData.Add("ids", attachmentIds);
+            attachmentDTOs = await _consulHttpClient.PostFormAsync<List<AttachmentDTO>>(_attachmentsMs, "/api/Attachment/get-by-ids", formData, attachmentDTOs);
+
+            for (int index = 0; index < pages.Count; index++)
+            {
+                pages.ElementAt(index).Image = attachmentDTOs.ElementAt(index);
             }
         }
     }

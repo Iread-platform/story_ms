@@ -11,10 +11,11 @@ namespace iread_story.Web.DTO.Page
         [Range(1, int.MaxValue, ErrorMessage = ErrorMessages.INVALID_PAGE_ID_VALUE)]
         public int PageId { get; set; }
 
+        public int ImageId { get; set; }
         public string Content { get; set; }
         public string Words { get; set; }
         public List<HighLightDto> HighLights { get; set; }
         public List<CommentDto> Comments { get; set; }
-
+        public AttachmentDTO Image { get; internal set; }
     }
 }

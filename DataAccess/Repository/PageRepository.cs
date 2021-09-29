@@ -69,5 +69,11 @@ namespace iread_story.DataAccess.Repository
         {
             _context.Database.ExecuteSqlRaw($"UPDATE Pages  SET  No = No - 1 WHERE StoryId = {storyId} AND No >= {index}");
         }
+
+        public void Update(Page page)
+        {
+            _context.Update(page);
+            _context.SaveChanges();
+        }
     }
 }
