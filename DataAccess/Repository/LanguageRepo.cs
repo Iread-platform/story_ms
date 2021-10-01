@@ -18,19 +18,31 @@ namespace iread_story.DataAccess.Repository
             _context = context;
         }
 
-        public Task<Language> AddLanguage(Language language)
+        public async Task<Language> AddLanguage(Language language)
         {
-            throw new System.NotImplementedException();
+            Language addedLanguage = (await _context.Languages.AddAsync(language)).Entity;
+            await _context.SaveChangesAsync();
+            return addedLanguage;
         }
 
-        public Task<List<Language>> GetAllLanguages()
+        public async Task<List<Language>> GetAllLanguages()
         {
-            throw new System.NotImplementedException();
+            return await _context.Languages.ToListAsync();
         }
 
-        public Task<List<Language>> GetLanguage(int id)
+        public async Task<Language> GetLanguage(int id)
         {
-            throw new System.NotImplementedException();
+            return await _context.Languages.FindAsync(id);
+        }
+
+        public async Task<bool> Exists(int id)
+        {
+            return (await _context.Languages.FindAsync(id)) != null;
+        }
+
+        public async Task<bool> Exists(string code)
+        {
+            return (await _context.Languages.Where(l => l.Code.Equals(code.ToLower())).ToListAsync()).Count() > 0;
         }
     }
 }

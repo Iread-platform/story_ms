@@ -1,6 +1,7 @@
 using iread_story.DataAccess.Data.Entity;
 using iread_story.Web.DTO.Page;
 using iread_story.Web.DTO.Story;
+using iread_story.Web.DTO.Language;
 
 namespace iread_story.Web.Profile
 {
@@ -30,6 +31,9 @@ namespace iread_story.Web.Profile
             CreateMap<Page, PageUpdateDto>().ReverseMap();
             CreateMap<Page, PageWithoutStoryDto>().ReverseMap();
 
+            //Language Mapper
+            CreateMap<Language, LanguageAddDto>().ReverseMap();
+            CreateMap<Language, LanguageGetDto>().ReverseMap();
         }
     }
 }
