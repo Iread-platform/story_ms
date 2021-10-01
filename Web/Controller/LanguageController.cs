@@ -19,7 +19,6 @@ namespace iread_story.Web.Controller
     [Route("api/[controller]/")]
     public class LanguageController : ControllerBase
     {
-        private readonly ILogger<StoryController> _logger;
         private readonly IMapper _mapper;
         private readonly LanguageService _languageService;
         public LanguageController(IMapper mapper, LanguageService languageService)
@@ -50,6 +49,22 @@ namespace iread_story.Web.Controller
             if (language == null)
             {
                 return NotFound();
+            }
+            return Ok(_mapper.Map<LanguageGetDto>(language));
+        }
+
+        [HttpDelete("delete/{id}")]
+        public async Task<IActionResult> DeleteLanguage(int id)
+        {
+
+            if (!await _languageService.LanguageExists(id))
+            {
+                return NotFound(ErrorMessages.LANGUAGE_NOT_EXISTS);
+            }
+            Language language = _languageService.DeleteLanguage(id);
+            if (language == null)
+            {
+                return BadRequest(ErrorMessages.LANGUAGE_NOT_DELETED);
             }
             return Ok(_mapper.Map<LanguageGetDto>(language));
         }

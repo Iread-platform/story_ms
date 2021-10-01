@@ -22,6 +22,8 @@ namespace iread_story.Web.Util
         public const String LANGUAGE_INVALID_NAME = "Only characters are allowed a-z A-Z.";
         public const String LANGUAGE_INVALID_CODE = "Only lower case characters are allowed a-z.";
         public const String LANGUAGE_EXISTS = "Language already exists.";
+        public const String LANGUAGE_NOT_EXISTS = "Language Does not exist.";
+        public const String LANGUAGE_NOT_DELETED = "Language was not deleted.";
 
 
         public static List<String> ModelStateParser(ModelStateDictionary modelStateDictionary)

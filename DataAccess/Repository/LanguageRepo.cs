@@ -44,5 +44,14 @@ namespace iread_story.DataAccess.Repository
         {
             return (await _context.Languages.Where(l => l.Code.Equals(code.ToLower())).ToListAsync()).Count() > 0;
         }
+        public Language Delete(int id)
+        {
+            Language deleted = _context.Languages.Remove(_context.Languages.Find(id)).Entity;
+
+            _context.SaveChanges();
+            return deleted;
+        }
+
+
     }
 }
