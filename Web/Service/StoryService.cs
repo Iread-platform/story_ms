@@ -24,7 +24,7 @@ namespace iread_story.Web.Service
         }
 
         public void UpdateStory(Story story)
-        { 
+        {
             _repository.GetStoryService.UpdateStory(story);
         }
 

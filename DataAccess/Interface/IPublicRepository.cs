@@ -5,6 +5,7 @@ namespace iread_story.DataAccess.Interface
 
         IStoryRepository GetStoryService { get; }
         IPageRepository GetPageRepository { get; }
+        ILanguageRepo GetLanguageRepo { get; }
 
     }
 }

@@ -14,7 +14,7 @@ namespace iread_story.DataAccess.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            
+
         }
 
 
@@ -25,6 +25,7 @@ namespace iread_story.DataAccess.Data
         //entities
         public DbSet<Story> Stories { get; set; }
         public DbSet<Page> Pages { get; set; }
+        public DbSet<Language> Languages { get; set; }
 
     }
 }
