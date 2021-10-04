@@ -44,5 +44,10 @@ namespace iread_story.Web.Service
         {
             return _repository.GetLanguageRepo.Delete(id);
         }
+
+        public async Task<List<Language>> GetActiveLanguages()
+        {
+            return await _repository.GetLanguageRepo.GetActiveLanguages();
+        }
     }
 }

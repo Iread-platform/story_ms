@@ -51,6 +51,10 @@ namespace iread_story.DataAccess.Repository
             _context.SaveChanges();
             return deleted;
         }
+        public async Task<List<Language>> GetActiveLanguages()
+        {
+            return await _context.Languages.Where(lanuage => lanuage.Active).ToListAsync();
+        }
 
 
     }

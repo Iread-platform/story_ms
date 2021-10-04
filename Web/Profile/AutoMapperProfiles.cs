@@ -3,6 +3,8 @@ using iread_story.Web.DTO.Page;
 using iread_story.Web.DTO.Story;
 using iread_story.Web.DTO.Language;
 
+using System.Globalization;
+
 namespace iread_story.Web.Profile
 {
     public class AutoMapperProfile : AutoMapper.Profile
@@ -34,6 +36,8 @@ namespace iread_story.Web.Profile
             //Language Mapper
             CreateMap<Language, LanguageAddDto>().ReverseMap();
             CreateMap<Language, LanguageGetDto>().ReverseMap();
+            CreateMap<CultureInfo, LanguageGetDto>().ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.NativeName)).ForMember(dest => dest.Code, opt => opt.MapFrom(src => src.TwoLetterISOLanguageName)).ReverseMap();
+            CreateMap<CultureInfo, Language>().ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.NativeName)).ForMember(dest => dest.Code, opt => opt.MapFrom(src => src.TwoLetterISOLanguageName)).ReverseMap();
         }
     }
 }

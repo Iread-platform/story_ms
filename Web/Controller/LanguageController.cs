@@ -37,6 +37,16 @@ namespace iread_story.Web.Controller
             }
             return Ok(languages.ConvertAll<LanguageGetDto>(l => _mapper.Map<LanguageGetDto>(l)));
         }
+        [HttpGet("active")]
+        public async Task<IActionResult> GetActiveLanguages()
+        {
+            List<Language> languages = await _languageService.GetActiveLanguages();
+            if (!languages.Any() || languages.Count() == 0)
+            {
+                return NotFound();
+            }
+            return Ok(languages.ConvertAll<LanguageGetDto>(l => _mapper.Map<LanguageGetDto>(l)));
+        }
 
         [HttpPost("add")]
         public async Task<IActionResult> AddLanguage([FromBody] LanguageAddDto languageAddDto)
