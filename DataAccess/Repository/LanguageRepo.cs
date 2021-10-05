@@ -35,6 +35,11 @@ namespace iread_story.DataAccess.Repository
             return await _context.Languages.FindAsync(id);
         }
 
+        public async Task<Language> GetLanguage(string code)
+        {
+            return await _context.Languages.Where(l => l.Code.Equals(code)).FirstAsync();
+        }
+
         public async Task<bool> Exists(int id)
         {
             return (await _context.Languages.FindAsync(id)) != null;

@@ -30,6 +30,12 @@ namespace iread_story.Web.Service
             return await _repository.GetLanguageRepo.GetLanguage(id);
         }
 
+        public async Task<Language> GetLanuageByCode(string code)
+        {
+            return await _repository.GetLanguageRepo.GetLanguage(code);
+        }
+
+
         public async Task<bool> LanguageExists(Language language)
         {
             return await _repository.GetLanguageRepo.Exists(language.LanguageId) || await _repository.GetLanguageRepo.Exists(language.Code);
@@ -39,6 +45,12 @@ namespace iread_story.Web.Service
         {
             return await _repository.GetLanguageRepo.Exists(id);
         }
+
+        public async Task<bool> LanguageExists(string code)
+        {
+            return await _repository.GetLanguageRepo.Exists(code);
+        }
+
 
         public Language DeleteLanguage(int id)
         {

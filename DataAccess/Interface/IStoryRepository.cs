@@ -12,7 +12,7 @@ namespace iread_story.DataAccess.Interface
         void UpdateStory(Story story);
         void AddStory(Story story);
 
-        List<Story> GetStories();
+        List<Story> GetStories(Language? languag);
 
         void DeleteStory(Story story);
 
@@ -20,7 +20,7 @@ namespace iread_story.DataAccess.Interface
 
         List<Story> GetStoriesByIds(List<int> ids);
         public Task<List<Story>> GetByTitle(string title);
-        public Task<List<Story>> GetByLevel(int level);
+        public Task<List<Story>> GetByLevel(int level, Language? language);
         public Task<List<Story>> GetByIds(List<int> ids);
     }
 }

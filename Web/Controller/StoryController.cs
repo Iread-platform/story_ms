@@ -38,22 +38,36 @@ namespace iread_story.Web.Controller
         private readonly string _categoriesMs = "tag_ms";
         private readonly string _reviewMs = "review_ms";
         private readonly StoryService _storyService;
+        private readonly LanguageService _languageService;
 
         public StoryController(ILogger<StoryController> logger, IMapper mapper,
+        LanguageService languageServiec,
             IConsulHttpClientService consulHttpClient, StoryService storyService)
         {
             _logger = logger;
-
+            _languageService = languageServiec;
             _mapper = mapper;
             _consulHttpClient = consulHttpClient;
             _storyService = storyService;
         }
 
         [HttpGet("all")]
-        public async Task<IActionResult> GetStories()
+        public async Task<IActionResult> GetStories([FromQuery] string lang)
         {
             List<ViewStoryDto> viewStories = new List<ViewStoryDto>();
-            List<Story> stories = _storyService.GetStories();
+            List<Story> stories;
+            if (lang != null)
+            {
+                if (!await _languageService.LanguageExists(lang))
+                {
+                    return BadRequest(ErrorMessages.LANGUAGE_NOT_EXISTS);
+                }
+
+                Language language = await _languageService.GetLanuageByCode(lang);
+                stories
+                    = _storyService.GetStories(language);
+            }
+            stories = _storyService.GetStories();
             if (!stories.Any())
             {
                 return NotFound();
@@ -140,9 +154,21 @@ namespace iread_story.Web.Controller
         [HttpGet("get-by-level/{level}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByLevel([FromRoute] int level)
+        public async Task<IActionResult> GetByLevel([FromQuery] string? lang, [FromRoute] int level)
         {
-            List<Story> stories = await _storyService.GetByLevel(level);
+            List<Story> stories;
+            if (lang != null)
+            {
+                if (!await _languageService.LanguageExists(lang))
+                {
+                    return BadRequest(ErrorMessages.LANGUAGE_NOT_EXISTS);
+                }
+
+                Language language = await _languageService.GetLanuageByCode(lang);
+                stories
+                     = await _storyService.GetByLevel(level, language);
+            }
+            stories = await _storyService.GetByLevel(level, null);
             if (stories == null || stories.Count == 0)
             {
                 return NotFound();
@@ -160,15 +186,26 @@ namespace iread_story.Web.Controller
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize]
-        public async Task<IActionResult> GetByMyAppropriatedLevel()
+        public async Task<IActionResult> GetByMyAppropriatedLevel([FromQuery] string? lang)
         {
 
             string myId = User.Claims.Where(c => c.Type == "sub")
                              .Select(c => c.Value).SingleOrDefault();
 
             UserDto user = await _consulHttpClient.GetAsync<UserDto>("identity_ms", $"/api/Identity/{myId}/get");
+            List<Story> stories;
+            if (lang != null)
+            {
+                if (!await _languageService.LanguageExists(lang))
+                {
+                    return BadRequest(ErrorMessages.LANGUAGE_NOT_EXISTS);
+                }
 
-            List<Story> stories = await _storyService.GetByLevel(user.Level);
+                Language language = await _languageService.GetLanuageByCode(lang);
+                stories
+                     = await _storyService.GetByLevel(user.Level, language);
+            }
+            stories = await _storyService.GetByLevel(user.Level, null);
 
             if (stories == null || stories.Count == 0)
             {
@@ -186,7 +223,7 @@ namespace iread_story.Web.Controller
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize]
-        public async Task<IActionResult> GetByMyAppropriatedLevelAndNotReadYet()
+        public async Task<IActionResult> GetByMyAppropriatedLevelAndNotReadYet([FromQuery] string? lang)
         {
 
             string myId = User.Claims.Where(c => c.Type == "sub")
@@ -197,8 +234,20 @@ namespace iread_story.Web.Controller
             //List that contain appropriated stories and appropriated stories that have not readied yet
             List<StoryWithSectionDto> finalResultList = new List<StoryWithSectionDto>();
 
+            List<Story> stories;
+            if (lang != null)
+            {
+                if (!await _languageService.LanguageExists(lang))
+                {
+                    return BadRequest(ErrorMessages.LANGUAGE_NOT_EXISTS);
+                }
+
+                Language language = await _languageService.GetLanuageByCode(lang);
+                stories
+                     = await _storyService.GetByLevel(user.Level, language);
+            }
             //Get stories that related to user level
-            List<Story> stories = await _storyService.GetByLevel(user.Level);
+            stories = await _storyService.GetByLevel(user.Level, null);
             StoryWithSectionDto appropriateStories = await GetSearchedStoriesThatRelatedToUserLevel(stories);
 
             //Add appropriated stories to final result list

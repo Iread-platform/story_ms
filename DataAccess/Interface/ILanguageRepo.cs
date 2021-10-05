@@ -10,6 +10,7 @@ namespace iread_story.DataAccess.Interface
         public Task<List<Language>> GetAllLanguages();
         public Task<List<Language>> GetActiveLanguages();
         public Task<Language> GetLanguage(int id);
+        public Task<Language> GetLanguage(string code);
         public Task<Language> AddLanguage(Language language);
         public Task<bool> Exists(int id);
         public Task<bool> Exists(string code);
