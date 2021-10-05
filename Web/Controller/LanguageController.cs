@@ -48,6 +48,19 @@ namespace iread_story.Web.Controller
             return Ok(languages.ConvertAll<LanguageGetDto>(l => _mapper.Map<LanguageGetDto>(l)));
         }
 
+        [HttpPost("toggle-activate/{id:int}")]
+        public async Task<IActionResult> ToggleActivate(int id)
+        {
+            if (!await _languageService.LanguageExists(id))
+            {
+                return NotFound(ErrorMessages.LANGUAGE_NOT_EXISTS);
+            }
+            Language updtedLanguage = await _languageService.ToggleActiveLanguage(id);
+            return Ok(_mapper.Map<LanguageGetDto>(updtedLanguage));
+
+        }
+
+
         [HttpPost("add")]
         public async Task<IActionResult> AddLanguage([FromBody] LanguageAddDto languageAddDto)
         {

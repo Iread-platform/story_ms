@@ -56,6 +56,14 @@ namespace iread_story.DataAccess.Repository
             return await _context.Languages.Where(lanuage => lanuage.Active).ToListAsync();
         }
 
+        public async Task<Language> ToogleActivate(int id)
+        {
+            Language language = await _context.Languages.FindAsync(id);
+            language.Active = !language.Active;
+            Language updatedLangage = _context.Languages.Update(language).Entity;
+            await _context.SaveChangesAsync();
+            return updatedLangage;
+        }
 
     }
 }

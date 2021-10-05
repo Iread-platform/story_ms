@@ -49,5 +49,10 @@ namespace iread_story.Web.Service
         {
             return await _repository.GetLanguageRepo.GetActiveLanguages();
         }
+
+        public async Task<Language> ToggleActiveLanguage(int id)
+        {
+            return await _repository.GetLanguageRepo.ToogleActivate(id);
+        }
     }
 }

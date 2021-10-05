@@ -14,5 +14,6 @@ namespace iread_story.DataAccess.Interface
         public Task<bool> Exists(int id);
         public Task<bool> Exists(string code);
         public Language Delete(int id);
+        public Task<Language> ToogleActivate(int id);
     }
 }
