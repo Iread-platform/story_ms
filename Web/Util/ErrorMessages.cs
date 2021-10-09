@@ -24,6 +24,7 @@ namespace iread_story.Web.Util
         public const String LANGUAGE_EXISTS = "Language already exists.";
         public const String LANGUAGE_NOT_EXISTS = "Language Does not exist.";
         public const String LANGUAGE_NOT_DELETED = "Language was not deleted.";
+        public const String LANGUAGE_NOT_ACTIVE = "Language is not supported.";
 
 
         public static List<String> ModelStateParser(ModelStateDictionary modelStateDictionary)

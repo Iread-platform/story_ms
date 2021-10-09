@@ -60,12 +60,17 @@ namespace iread_story.Web.Controller
             {
                 if (!await _languageService.LanguageExists(lang))
                 {
-                    return BadRequest(ErrorMessages.LANGUAGE_NOT_EXISTS);
+                    return NotFound(ErrorMessages.LANGUAGE_NOT_EXISTS);
                 }
 
                 Language language = await _languageService.GetLanuageByCode(lang);
-                stories
-                    = _storyService.GetStories(language);
+                if (language.Active)
+                {
+                    stories
+                                       = _storyService.GetStories(language);
+                }
+
+                return NotFound(ErrorMessages.LANGUAGE_NOT_ACTIVE);
             }
             stories = _storyService.GetStories();
             if (!stories.Any())
