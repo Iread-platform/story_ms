@@ -780,6 +780,8 @@ namespace iread_story.Web.Controller
         {
             List<List<HighLightDto>> highlights = null;
             List<List<CommentDto>> comments = null;
+            List<List<AudioDto>> audios = null;
+            List<List<DrawingDto>> drawings = null;
             List<AttachmentDTO> attachmentDTOs = null;
             Dictionary<string, string> formData = new Dictionary<string, string>();
             string pageIds = "";
@@ -802,6 +804,22 @@ namespace iread_story.Web.Controller
             {
                 pages.ElementAt(index).Comments = comments.ElementAt(index);
             }
+            
+            //get drawing for pages
+            drawings = await _consulHttpClient.PostFormAsync<List<List<DrawingDto>>>(_interactionMs, $"/api/Interaction/Drawing/get-by-pages", formData, highlights);
+            
+            for (int index = 0; index < pages.Count; index++)
+            {
+                pages.ElementAt(index).Drawings = drawings.ElementAt(index);
+            }
+            
+            //get audios for pages
+            audios = await _consulHttpClient.PostFormAsync<List<List<AudioDto>>>(_interactionMs, $"/api/Interaction/audio/get-by-pages", formData, highlights);
+            
+            for (int index = 0; index < pages.Count; index++)
+            {
+                pages.ElementAt(index).Audios = audios.ElementAt(index);
+            }
 
             string attachmentIds = "";
             pages.ForEach(p =>
@@ -823,6 +841,8 @@ namespace iread_story.Web.Controller
         {
             List<List<HighLightDto>> highlights = null;
             List<List<CommentDto>> comments = null;
+            List<List<AudioDto>> audios = null;
+            List<List<DrawingDto>> drawings = null;
             List<AttachmentDTO> attachmentDTOs = null;
             Dictionary<string, string> formData = new Dictionary<string, string>();
             string pageIds = "";
@@ -834,19 +854,40 @@ namespace iread_story.Web.Controller
 
             formData.Add("pagesIds", pageIds);
             formData.Add("questionId", questionId.ToString());
+            
+            //get highlight for question and pages
             highlights = await _consulHttpClient.PostFormAsync<List<List<HighLightDto>>>(_interactionMs, $"/api/Interaction/HighLight/get-by-pages-and-question", formData, highlights);
 
             for (int index = 0; index < pages.Count; index++)
             {
                 pages.ElementAt(index).HighLights = highlights.ElementAt(index);
             }
+            
+            //get comments for question and pages
             comments = await _consulHttpClient.PostFormAsync<List<List<CommentDto>>>(_interactionMs, $"/api/Interaction/Comment/get-by-pages-and-question", formData, highlights);
 
             for (int index = 0; index < pages.Count; index++)
             {
                 pages.ElementAt(index).Comments = comments.ElementAt(index);
             }
-
+            
+            //get drawing for question and pages
+            drawings = await _consulHttpClient.PostFormAsync<List<List<DrawingDto>>>(_interactionMs, $"/api/Interaction/Drawing/get-by-pages-and-question", formData, highlights);
+            
+            for (int index = 0; index < pages.Count; index++)
+            {
+                pages.ElementAt(index).Drawings = drawings.ElementAt(index);
+            }
+            
+            //get audios for question and pages
+            audios = await _consulHttpClient.PostFormAsync<List<List<AudioDto>>>(_interactionMs, $"/api/Interaction/audio/get-by-pages-and-question", formData, highlights);
+            
+            for (int index = 0; index < pages.Count; index++)
+            {
+                pages.ElementAt(index).Audios = audios.ElementAt(index);
+            }
+            
+            
             string attachmentIds = "";
             pages.ForEach(p =>
             {

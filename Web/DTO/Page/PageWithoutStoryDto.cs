@@ -16,6 +16,8 @@ namespace iread_story.Web.DTO.Page
         public string Words { get; set; }
         public List<HighLightDto> HighLights { get; set; }
         public List<CommentDto> Comments { get; set; }
+        public List<DrawingDto> Drawings { get; set; }
+        public List<AudioDto> Audios { get; set; }
         public AttachmentDTO Image { get; internal set; }
     }
 }
