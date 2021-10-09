@@ -26,6 +26,8 @@ namespace iread_story.Web.Util
         public const String LANGUAGE_NOT_DELETED = "Language was not deleted.";
         public const String LANGUAGE_NOT_ACTIVE = "Language is not supported.";
 
+        public const String QUESTION_ID_NOT_FOUND = "Question id not found.";
+
 
         public static List<String> ModelStateParser(ModelStateDictionary modelStateDictionary)
         {
