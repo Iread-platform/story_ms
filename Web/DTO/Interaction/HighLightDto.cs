@@ -6,6 +6,7 @@ namespace iread_story.Web.Dto.Interaction
     public class HighLightDto
     {
         public int HighLightId { get; set; }
+        public InnerInteractionDto Interaction { get; set; }
 
         public int FirstWordIndex { get; set; }
 

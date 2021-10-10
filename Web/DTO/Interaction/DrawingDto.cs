@@ -5,6 +5,7 @@ namespace iread_story.Web.Dto.Interaction
     public class DrawingDto
     {
         public int DrawingId { get; set; }
+        public InnerInteractionDto Interaction { get; set; }
         public string Comment { get; set; }
         public string AudioId { get; set; }
         public string Points { get; set; }
