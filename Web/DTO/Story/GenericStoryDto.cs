@@ -16,7 +16,7 @@ namespace iread_story.Web.DTO.Story
         public string ManagerId { get; set; }
         public InnerCategoryDto Category { get; set; }
         public AttachmentDTO StoryCover { get; set; }
-        public StoryReview Rating { get; set; }
+        public StoryAverageRate Rating { get; set; }
 
 
     }

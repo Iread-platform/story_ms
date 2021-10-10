@@ -30,7 +30,7 @@ namespace iread_story.Web.DTO.Story
 
         public IFormFile StoryAudio { get; set; }
 
-        public StoryReview StoryReview { get; set; }
+        public StoryAverageRate StoryReview { get; set; }
         public string Color { get; set; }
 
 

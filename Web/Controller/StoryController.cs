@@ -64,7 +64,7 @@ namespace iread_story.Web.Controller
                 ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
                 viewStory.StoryAudio = await GetAttachmentFromAttachmentMs(story.AudioId);
                 viewStory.StoryCover = await GetAttachmentFromAttachmentMs(story.CoverId);
-                viewStory.Rating = await GetReviewFromReviewMs(story.StoryId);
+                viewStory.Rating = await GetAvarageRateFromReviewMs(story.StoryId);
                 viewStory.KeyWords = await GetTagsFromTagMs(story.StoryId);
                 viewStory.Category = await GetCategoryFromMs(story.StoryId);
                 viewStories.Add(viewStory);
@@ -87,7 +87,7 @@ namespace iread_story.Web.Controller
             ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
             viewStory.StoryAudio = await GetAttachmentFromAttachmentMs(story.AudioId);
             viewStory.StoryCover = await GetAttachmentFromAttachmentMs(story.CoverId);
-            viewStory.Rating = await GetReviewFromReviewMs(story.StoryId);
+            viewStory.Rating = await GetAvarageRateFromReviewMs(story.StoryId);
             viewStory.KeyWords = await GetTagsFromTagMs(story.StoryId);
             viewStory.Category = await GetCategoryFromMs(story.StoryId);
             return Ok(viewStory);
@@ -253,7 +253,7 @@ namespace iread_story.Web.Controller
                 ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
                 viewStory.StoryAudio = await GetAttachmentFromAttachmentMs(story.AudioId);
                 viewStory.StoryCover = await GetAttachmentFromAttachmentMs(story.CoverId);
-                viewStory.Rating = await GetReviewFromReviewMs(story.StoryId);
+                viewStory.Rating = await GetAvarageRateFromReviewMs(story.StoryId);
                 viewStory.KeyWords = await GetTagsFromTagMs(story.StoryId);
                 viewStory.Category = await GetCategoryFromMs(story.StoryId);
                 viewStories.Add(viewStory);
@@ -669,11 +669,11 @@ namespace iread_story.Web.Controller
             return null;
         }
 
-        private async Task<StoryReview> GetReviewFromReviewMs(int storyId)
+        private async Task<StoryAverageRate> GetAvarageRateFromReviewMs(int storyId)
         {
             try
             {
-                return await _consulHttpClient.GetAsync<StoryReview>(_reviewMs, $"api/review/StoryReview/{storyId}");
+                return await _consulHttpClient.GetAsync<StoryAverageRate>(_reviewMs, $"api/review/StoryReview/{storyId}");
             }
             catch (Exception e)
             {
@@ -682,6 +682,13 @@ namespace iread_story.Web.Controller
 
             return null;
         }
+
+
+        private async Task<StoryAverageRate> GetReviewsFromReviewMs(int storyId)
+        {
+            return await _consulHttpClient.GetAsync<StoryAverageRate>(_reviewMs, $"api/review/StoryReview/{storyId}");
+        }
+
 
         private async Task<List<TagWithIdDto>> GetTagsFromTagMs(int storyId)
         {
@@ -700,7 +707,7 @@ namespace iread_story.Web.Controller
 
         private async Task GetReviewsFromReviewMs<T>(List<T> searchedStories) where T : GenericStoryDto
         {
-            List<StoryReview> res = null;
+            List<StoryAverageRate> res = null;
             Dictionary<string, string> formData = new Dictionary<string, string>();
             string storyIds = "";
             searchedStories.ForEach(s =>
@@ -710,7 +717,7 @@ namespace iread_story.Web.Controller
             storyIds = storyIds.Remove(storyIds.Length - 1);
 
             formData.Add("ids", storyIds);
-            res = await _consulHttpClient.PostFormAsync<List<StoryReview>>(_reviewMs, $"/api/Review/get-by-story_ids", formData, res);
+            res = await _consulHttpClient.PostFormAsync<List<StoryAverageRate>>(_reviewMs, $"/api/Review/get-by-story_ids", formData, res);
 
             for (int index = 0; index < searchedStories.Count; index++)
             {
