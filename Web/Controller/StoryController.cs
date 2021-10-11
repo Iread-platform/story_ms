@@ -159,7 +159,26 @@ namespace iread_story.Web.Controller
         [HttpGet("get-by-level/{level}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByLevel([FromQuery] string? lang, [FromRoute] int level)
+        public async Task<IActionResult> GetByLevel([FromRoute] int level)
+        {
+
+            List<Story> stories = await _storyService.GetByLevel(level, null);
+            if (stories == null || stories.Count == 0)
+            {
+                return NotFound();
+            }
+
+            List<SearchedStoryByLevelDto> SearchedStories = _mapper.Map<List<SearchedStoryByLevelDto>>(stories);
+            await GetAttachmentsFromAttachmentMs(SearchedStories, stories);
+            await GetCategoriesFromCategoryMs(SearchedStories, stories);
+            return Ok(SearchedStories);
+        }
+
+
+        [HttpGet("{lang}/get-by-level/{level}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByLevelWithLanguage(string lang, [FromRoute] int level)
         {
             List<Story> stories;
             if (lang != null)
@@ -178,7 +197,10 @@ namespace iread_story.Web.Controller
                 stories
                      = await _storyService.GetByLevel(level, language);
             }
-            stories = await _storyService.GetByLevel(level, null);
+            else
+            {
+                stories = await _storyService.GetByLevel(level, null);
+            }
             if (stories == null || stories.Count == 0)
             {
                 return NotFound();
@@ -190,13 +212,35 @@ namespace iread_story.Web.Controller
             return Ok(SearchedStories);
         }
 
-
-
         [HttpGet("get-by-my-appropriated-level")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize]
-        public async Task<IActionResult> GetByMyAppropriatedLevel([FromQuery] string? lang)
+        public async Task<IActionResult> GetByMyAppropriatedLevel()
+        {
+
+            string myId = User.Claims.Where(c => c.Type == "sub")
+                             .Select(c => c.Value).SingleOrDefault();
+
+            UserDto user = await _consulHttpClient.GetAsync<UserDto>("identity_ms", $"/api/Identity/{myId}/get");
+            List<Story> stories = await _storyService.GetByLevel(user.Level, null);
+
+            if (stories == null || stories.Count == 0)
+            {
+                return NotFound();
+            }
+
+            List<SearchedStoryByLevelDto> SearchedStories = _mapper.Map<List<SearchedStoryByLevelDto>>(stories);
+            await GetAttachmentsFromAttachmentMs(SearchedStories, stories);
+            await GetCategoriesFromCategoryMs(SearchedStories, stories);
+            return Ok(SearchedStories);
+        }
+
+        [HttpGet("{lang}/get-by-my-appropriated-level")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize]
+        public async Task<IActionResult> GetByMyAppropriatedLevelWithLanguage(string lang)
         {
 
             string myId = User.Claims.Where(c => c.Type == "sub")
@@ -220,7 +264,11 @@ namespace iread_story.Web.Controller
                 stories
                      = await _storyService.GetByLevel(user.Level, language);
             }
-            stories = await _storyService.GetByLevel(user.Level, null);
+            else
+            {
+                stories = await _storyService.GetByLevel(user.Level, null);
+
+            }
 
             if (stories == null || stories.Count == 0)
             {
@@ -238,7 +286,40 @@ namespace iread_story.Web.Controller
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize]
-        public async Task<IActionResult> GetByMyAppropriatedLevelAndNotReadYet([FromQuery] string? lang)
+        public async Task<IActionResult> GetByMyAppropriatedLevelAndNotReadYet()
+        {
+
+            string myId = User.Claims.Where(c => c.Type == "sub")
+                             .Select(c => c.Value).SingleOrDefault();
+
+            UserDto user = await _consulHttpClient.GetAsync<UserDto>("identity_ms", $"/api/Identity/{myId}/get");
+
+            //List that contain appropriated stories and appropriated stories that have not readied yet
+            List<StoryWithSectionDto> finalResultList = new List<StoryWithSectionDto>();
+
+            //Get stories that related to user level
+            List<Story> stories = await _storyService.GetByLevel(user.Level, null);
+            StoryWithSectionDto appropriateStories = await GetSearchedStoriesThatRelatedToUserLevel(stories);
+
+            //Add appropriated stories to final result list
+            finalResultList.Add(appropriateStories);
+
+            //Get appropriated stories that a user have not readied yet  
+            StoryWithSectionDto appropriateStoriesNotReadied = await GetAppropriateStoriesThatNotReadied(stories);
+
+            //Add appropriated stories that not readied to final result list
+            finalResultList.Add(appropriateStoriesNotReadied);
+
+
+            return Ok(finalResultList);
+        }
+
+
+        [HttpGet("{lang}/get-by-my-appropriated-level-and-not-read-yet")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize]
+        public async Task<IActionResult> GetByMyAppropriatedLevelAndNotReadYetWithLanguage(string lang)
         {
 
             string myId = User.Claims.Where(c => c.Type == "sub")
@@ -266,8 +347,12 @@ namespace iread_story.Web.Controller
                 stories
                      = await _storyService.GetByLevel(user.Level, language);
             }
-            //Get stories that related to user level
-            stories = await _storyService.GetByLevel(user.Level, null);
+            else
+            {
+                //Get stories that related to user level
+                stories = await _storyService.GetByLevel(user.Level, null);
+            }
+
             StoryWithSectionDto appropriateStories = await GetSearchedStoriesThatRelatedToUserLevel(stories);
 
             //Add appropriated stories to final result list
@@ -282,7 +367,6 @@ namespace iread_story.Web.Controller
 
             return Ok(finalResultList);
         }
-
 
         [HttpGet("my-reading-stories/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
