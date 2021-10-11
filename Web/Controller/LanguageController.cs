@@ -35,7 +35,7 @@ namespace iread_story.Web.Controller
             {
                 return NoContent();
             }
-            return Ok(languages.ConvertAll<LanguageGetDto>(l => _mapper.Map<LanguageGetDto>(l)));
+            return Ok(_mapper.Map<List<LanguageGetDto>>(languages));
         }
         [HttpGet("active")]
         public async Task<IActionResult> GetActiveLanguages()
@@ -45,7 +45,7 @@ namespace iread_story.Web.Controller
             {
                 return NotFound();
             }
-            return Ok(languages.ConvertAll<LanguageGetDto>(l => _mapper.Map<LanguageGetDto>(l)));
+            return Ok(_mapper.Map<List<LanguageGetDto>>(languages));
         }
 
         [HttpPost("toggle-activate/{id:int}")]
