@@ -57,6 +57,11 @@ namespace iread_story
 
             // for routing
             services.AddControllers();
+            
+            // for stop looping of json result
+            services.AddMvc()
+                .AddNewtonsoftJson(options =>
+                    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             // for connection of DB
             services.AddDbContext<AppDbContext>(

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using iread_story.Web.DTO.Category;
+using iread_story.Web.DTO.Page;
 using iread_story.Web.DTO.Review;
 using iread_story.Web.DTO.Tag;
 using Microsoft.AspNetCore.Http;
@@ -28,6 +29,6 @@ namespace iread_story.Web.DTO.Story
         public AttachmentDTO StoryAudio { get; set; }
         public StoryAverageRate Rating { get; set; }
         public string Color { get; set; }
-
+        public List<PageDto> Pages { get; set; }
     }
 }
