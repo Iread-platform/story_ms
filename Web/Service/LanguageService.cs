@@ -38,17 +38,21 @@ namespace iread_story.Web.Service
 
         public async Task<bool> LanguageExists(Language language)
         {
-            return await _repository.GetLanguageRepo.Exists(language.LanguageId) || await _repository.GetLanguageRepo.Exists(language.Code);
+            return await _repository.GetLanguageRepo.IdExists(language.LanguageId) || await _repository.GetLanguageRepo.CodeExists(language.Code);
         }
 
         public async Task<bool> LanguageExists(int id)
         {
-            return await _repository.GetLanguageRepo.Exists(id);
+            return await _repository.GetLanguageRepo.IdExists(id);
         }
 
         public async Task<bool> LanguageExists(string code)
         {
-            return await _repository.GetLanguageRepo.Exists(code);
+            return await _repository.GetLanguageRepo.CodeExists(code);
+        }
+        public async Task<bool> LanguageIdExists(int id)
+        {
+            return await _repository.GetLanguageRepo.IdExists(id);
         }
 
 

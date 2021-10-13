@@ -52,7 +52,33 @@ namespace iread_story.Web.Controller
         }
 
         [HttpGet("all")]
-        public async Task<IActionResult> GetStories([FromQuery] string lang)
+        public async Task<IActionResult> GetStories()
+        {
+            List<ViewStoryDto> viewStories = new List<ViewStoryDto>();
+            List<Story> stories;
+
+            stories = _storyService.GetStories();
+            if (!stories.Any())
+            {
+                return NotFound();
+            }
+
+            foreach (Story story in stories)
+            {
+                ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
+                viewStory.StoryAudio = await GetAttachmentFromAttachmentMs(story.AudioId);
+                viewStory.StoryCover = await GetAttachmentFromAttachmentMs(story.CoverId);
+                viewStory.Rating = await GetReviewFromReviewMs(story.StoryId);
+                viewStory.KeyWords = await GetTagsFromTagMs(story.StoryId);
+                viewStory.Category = await GetCategoryFromMs(story.StoryId);
+                viewStories.Add(viewStory);
+            }
+
+            return Ok(viewStories);
+        }
+
+        [HttpGet("{lang}/all")]
+        public async Task<IActionResult> GetStories(string lang)
         {
             List<ViewStoryDto> viewStories = new List<ViewStoryDto>();
             List<Story> stories;
@@ -60,7 +86,7 @@ namespace iread_story.Web.Controller
             {
                 if (!await _languageService.LanguageExists(lang))
                 {
-                    return NotFound(ErrorMessages.LANGUAGE_NOT_EXISTS);
+                    return BadRequest(ErrorMessages.LANGUAGE_NOT_EXISTS);
                 }
 
                 Language language = await _languageService.GetLanuageByCode(lang);
@@ -69,10 +95,19 @@ namespace iread_story.Web.Controller
                     stories
                                        = _storyService.GetStories(language);
                 }
+                else
+                {
+                    return NotFound(ErrorMessages.LANGUAGE_NOT_ACTIVE);
 
-                return NotFound(ErrorMessages.LANGUAGE_NOT_ACTIVE);
+                }
+
+
+
             }
-            stories = _storyService.GetStories();
+            else
+            {
+                stories = _storyService.GetStories();
+            }
             if (!stories.Any())
             {
                 return NotFound();
@@ -192,10 +227,15 @@ namespace iread_story.Web.Controller
                 if (language.Active)
                 {
                     stories
-                                       = _storyService.GetStories(language);
+                                       = await _storyService.GetByLevel(level, language);
                 }
-                stories
-                     = await _storyService.GetByLevel(level, language);
+                else
+                {
+                    return NotFound(ErrorMessages.LANGUAGE_NOT_ACTIVE);
+
+                }
+
+
             }
             else
             {
@@ -259,10 +299,14 @@ namespace iread_story.Web.Controller
                 if (language.Active)
                 {
                     stories
-                                       = _storyService.GetStories(language);
+                                        = await _storyService.GetByLevel(user.Level, language);
                 }
-                stories
-                     = await _storyService.GetByLevel(user.Level, language);
+                else
+                {
+                    return NotFound(ErrorMessages.LANGUAGE_NOT_ACTIVE);
+
+                }
+
             }
             else
             {
@@ -342,10 +386,15 @@ namespace iread_story.Web.Controller
                 if (language.Active)
                 {
                     stories
-                                       = _storyService.GetStories(language);
+                                       = await _storyService.GetByLevel(user.Level, language);
                 }
-                stories
-                     = await _storyService.GetByLevel(user.Level, language);
+                else
+                {
+                    return NotFound(ErrorMessages.LANGUAGE_NOT_ACTIVE);
+
+                }
+
+
             }
             else
             {

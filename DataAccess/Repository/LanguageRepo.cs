@@ -40,12 +40,12 @@ namespace iread_story.DataAccess.Repository
             return await _context.Languages.Where(l => l.Code.Equals(code)).FirstAsync();
         }
 
-        public async Task<bool> Exists(int id)
+        public async Task<bool> IdExists(int id)
         {
             return (await _context.Languages.FindAsync(id)) != null;
         }
 
-        public async Task<bool> Exists(string code)
+        public async Task<bool> CodeExists(string code)
         {
             return (await _context.Languages.Where(l => l.Code.Equals(code.ToLower())).ToListAsync()).Count() > 0;
         }

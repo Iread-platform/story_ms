@@ -28,6 +28,8 @@ namespace iread_story.DataAccess.Data
                 index += 1;
                 return new Language() { Name = c.EnglishName, Code = c.TwoLetterISOLanguageName, LanguageId = index };
             }));
+
+            modelBuilder.Entity<Story>().HasOne(s => s.Language).WithMany(l => l.Stories).OnDelete(DeleteBehavior.Cascade);
         }
 
 

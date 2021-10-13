@@ -12,8 +12,8 @@ namespace iread_story.DataAccess.Interface
         public Task<Language> GetLanguage(int id);
         public Task<Language> GetLanguage(string code);
         public Task<Language> AddLanguage(Language language);
-        public Task<bool> Exists(int id);
-        public Task<bool> Exists(string code);
+        public Task<bool> IdExists(int id);
+        public Task<bool> CodeExists(string code);
         public Language Delete(int id);
         public Task<Language> ToogleActivate(int id);
     }
