@@ -3,7 +3,7 @@ using MySql.EntityFrameworkCore.Metadata;
 
 namespace iread_story.Migrations
 {
-    public partial class Language_support : Migration
+    public partial class Lang_support : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -11,8 +11,7 @@ namespace iread_story.Migrations
                 name: "LanguageId",
                 table: "Stories",
                 type: "int",
-                nullable: false,
-                defaultValue: 0);
+                nullable: true);
 
             migrationBuilder.CreateTable(
                 name: "Languages",
