@@ -1660,7 +1660,7 @@ namespace iread_story.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<int>("LanguageId")
+                    b.Property<int?>("LanguageId")
                         .HasColumnType("int");
 
                     b.Property<string>("ManagerId")
@@ -1702,8 +1702,7 @@ namespace iread_story.Migrations
                     b.HasOne("iread_story.DataAccess.Data.Entity.Language", "Language")
                         .WithMany("Stories")
                         .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Language");
                 });
