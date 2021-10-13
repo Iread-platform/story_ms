@@ -9,8 +9,8 @@ using iread_story.DataAccess.Data;
 namespace iread_story.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20211003213456_init-languages-table")]
-    partial class initlanguagestable
+    [Migration("20211013100456_Language_support")]
+    partial class Language_support
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -1683,6 +1683,8 @@ namespace iread_story.Migrations
 
                     b.HasKey("StoryId");
 
+                    b.HasIndex("LanguageId");
+
                     b.ToTable("Stories");
                 });
 
@@ -1695,6 +1697,22 @@ namespace iread_story.Migrations
                         .IsRequired();
 
                     b.Navigation("Story");
+                });
+
+            modelBuilder.Entity("iread_story.DataAccess.Data.Entity.Story", b =>
+                {
+                    b.HasOne("iread_story.DataAccess.Data.Entity.Language", "Language")
+                        .WithMany("Stories")
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Language");
+                });
+
+            modelBuilder.Entity("iread_story.DataAccess.Data.Entity.Language", b =>
+                {
+                    b.Navigation("Stories");
                 });
 
             modelBuilder.Entity("iread_story.DataAccess.Data.Entity.Story", b =>
