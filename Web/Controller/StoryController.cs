@@ -68,7 +68,7 @@ namespace iread_story.Web.Controller
                 ViewStoryDto viewStory = _mapper.Map<ViewStoryDto>(story);
                 viewStory.StoryAudio = await GetAttachmentFromAttachmentMs(story.AudioId);
                 viewStory.StoryCover = await GetAttachmentFromAttachmentMs(story.CoverId);
-                viewStory.Rating = await GetReviewFromReviewMs(story.StoryId);
+                viewStory.Rating = await GetAvarageRateFromReviewMs(story.StoryId);
                 viewStory.KeyWords = await GetTagsFromTagMs(story.StoryId);
                 viewStory.Category = await GetCategoryFromMs(story.StoryId);
                 viewStories.Add(viewStory);
