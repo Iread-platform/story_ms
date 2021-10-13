@@ -26,6 +26,8 @@ namespace iread_story.DataAccess.Data.Entity
         public int CoverId { get; set; }
 
         public int AudioId { get; set; }
+        public int LanguageId { get; set; }
+        public Language Language { get; set; }
 
         [Required]
         public string ManagerId { get; set; }

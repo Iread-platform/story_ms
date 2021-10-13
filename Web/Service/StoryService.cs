@@ -24,7 +24,7 @@ namespace iread_story.Web.Service
         }
 
         public void UpdateStory(Story story)
-        { 
+        {
             _repository.GetStoryService.UpdateStory(story);
         }
 
@@ -41,9 +41,9 @@ namespace iread_story.Web.Service
             }
         }
 
-        public List<Story> GetStories()
+        public List<Story> GetStories(Language? language = null)
         {
-            return _repository.GetStoryService.GetStories();
+            return _repository.GetStoryService.GetStories(language);
         }
 
         public void DeleteStory(Story story)
@@ -66,9 +66,9 @@ namespace iread_story.Web.Service
             return await _repository.GetStoryService.GetByTitle(title);
         }
 
-        internal async Task<List<Story>> GetByLevel(int level)
+        internal async Task<List<Story>> GetByLevel(int level, Language? language)
         {
-            return await _repository.GetStoryService.GetByLevel(level);
+            return await _repository.GetStoryService.GetByLevel(level, language);
         }
 
         internal async Task<List<Story>> GetByIds(List<int> ids)

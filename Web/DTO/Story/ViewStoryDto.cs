@@ -11,6 +11,7 @@ namespace iread_story.Web.DTO.Story
     public class ViewStoryDto
     {
         public int StoryId { get; set; }
+        public int LanguageId { get; set; }
 
         public string Title { get; set; }
 

@@ -35,9 +35,9 @@ namespace iread_story.DataAccess.Repository
             _context.SaveChangesAsync();
         }
 
-        public List<Story> GetStories()
+        public List<Story> GetStories(Language? language)
         {
-            return _context.Stories.ToList();
+            return language == null ? _context.Stories.ToList() : _context.Stories.Where(s => s.LanguageId == language.LanguageId).ToList();
         }
 
         public void DeleteStory(Story story)
@@ -61,10 +61,11 @@ namespace iread_story.DataAccess.Repository
             return await _context.Stories.Where(story => story.Title.Contains(title)).ToListAsync();
         }
 
-        public async Task<List<Story>> GetByLevel(int level)
+        public async Task<List<Story>> GetByLevel(int level, Language? language)
         {
-            return await _context.Stories
-            .Where(story => story.StoryLevel <= level).ToListAsync();
+            return language == null ? await _context.Stories
+            .Where(story => story.StoryLevel <= level).ToListAsync() : await _context.Stories
+            .Where(story => story.StoryLevel <= level && story.LanguageId == language.LanguageId).ToListAsync();
         }
 
         public async Task<List<Story>> GetByIds(List<int> ids)

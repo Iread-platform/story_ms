@@ -10,6 +10,8 @@ namespace iread_story.Web.DTO.Story
 
         public string Title { get; set; }
 
+        public int LanguageId { get; set; }
+
         public DateTime ReleaseDate { get; set; }
 
         public string Description { get; set; }

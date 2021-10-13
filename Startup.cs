@@ -119,6 +119,10 @@ namespace iread_story
             // Inject story service
             services.AddScoped<StoryService>();
 
+
+            // Inject Language service
+            services.AddScoped<LanguageService>();
+
             //for page service
             services.AddScoped<PageService>();
 

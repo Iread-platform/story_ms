@@ -6,5 +6,6 @@ namespace iread_story.Web.DTO.Story
     {
         [Required(AllowEmptyStrings = false)]
         public string Title { get; set; }
+        public int LanguageId { get; set; }
     }
 }
