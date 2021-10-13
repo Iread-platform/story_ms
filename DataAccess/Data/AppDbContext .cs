@@ -22,13 +22,6 @@ namespace iread_story.DataAccess.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            int index = 0;
-            modelBuilder.Entity<Language>().HasData(CultureInfo.GetCultures(CultureTypes.NeutralCultures).ToList().ConvertAll<Language>((CultureInfo c) =>
-            {
-                index += 1;
-                return new Language() { Name = c.EnglishName, Code = c.TwoLetterISOLanguageName, LanguageId = index };
-            }));
-
             modelBuilder.Entity<Story>().HasOne(s => s.Language).WithMany(l => l.Stories).OnDelete(DeleteBehavior.Cascade);
         }
 

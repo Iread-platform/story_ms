@@ -19,6 +19,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using iread_identity_ms.DataAccess.Data;
 
 namespace iread_story
 {
@@ -57,7 +58,7 @@ namespace iread_story
 
             // for routing
             services.AddControllers();
-            
+
             // for stop looping of json result
             services.AddMvc()
                 .AddNewtonsoftJson(options =>
@@ -189,6 +190,7 @@ namespace iread_story
                 context.Database.Migrate();
             }
 
+            InitializeDatabase.Run(app).GetAwaiter().GetResult();
             //app.UseHttpsRedirection();
 
             app.UseRouting();
